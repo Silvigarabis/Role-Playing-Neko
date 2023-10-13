@@ -1,4 +1,4 @@
-package com.crystalneko.toneko;
+package com.crystalneko.toneko.bstats;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
