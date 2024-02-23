@@ -1,11 +1,12 @@
-package com.crystalneko.toneko.files;
+package com.crystalneko.toneko.utils;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.*;
 
-public class create {
-    public Boolean createNewFile(String filePath) {
+public class ConfigFileUtils {
+
+    public static Boolean createNewFile(String filePath) {
         File file = new File(filePath);
 
         if (!file.exists()) {
@@ -51,6 +52,7 @@ public class create {
             return false;
         }
     }
+
     //用于判断和设置yaml中某个键是否存在并设置值
     public static void setValue(String keyToSet , Object value,File file) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
@@ -62,6 +64,7 @@ public class create {
         } catch (IOException | InvalidConfigurationException e) {
         }
     }
+
     //设置某个值为null
     public static void setNullValue(File file, String keyToSetNull) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();

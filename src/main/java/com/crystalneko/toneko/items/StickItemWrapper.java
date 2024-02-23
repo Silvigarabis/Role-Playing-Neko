@@ -2,7 +2,6 @@ package com.crystalneko.toneko.items;
 
 import com.crystalneko.toneko.ToNeko;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -14,26 +13,24 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class getStick {
-    private ToNeko plugin;
-    public static ItemStack stick;
-    public static ItemStack stickLevel2;
-    public getStick(ToNeko plugin){
-        this.plugin = plugin;
-        stick = registerStick();
-        stickLevel2 = registerStickLevel2();
+public class StickItemWrapper {
+    public StickItemWrapper(ToNeko plugin){
     }
-    public void getStick(Player player){
+    
+    public static void giveStickToPlayer(Player player){
         //添加到玩家背包
-        player.getInventory().addItem(stick);
+        player.getInventory().addItem(wrapStickItem());
     }
-    public void getStick2(Player player){
+
+    @Deprecated
+    public static void giveLevel2StickToPlayer(Player player){
         //添加到玩家背包
-        player.getInventory().addItem(stickLevel2);
+        player.getInventory().addItem(wrapStickItemLevel2());
     }
-    private ItemStack registerStick(){
+    
+    public static ItemStack wrapStickItem(){
         // 创建一个NamespacedKey，用于唯一标识NBT标签
-        NamespacedKey key = new NamespacedKey(plugin, "neko");
+        NamespacedKey key = new NamespacedKey(ToNeko.pluginInstance, "neko");
         //创建一个新的木棍对象
         ItemStack itemStack = new ItemStack(Material.STICK);
         //获取物品的ItemMeta对象
@@ -58,9 +55,10 @@ public class getStick {
         itemStack.setItemMeta(itemMeta);
         return itemStack;
     }
-    private ItemStack registerStickLevel2(){
+    
+    public static ItemStack wrapStickItemLevel2(){
         // 创建一个NamespacedKey，用于唯一标识NBT标签
-        NamespacedKey key = new NamespacedKey(plugin, "nekolevel");
+        NamespacedKey key = new NamespacedKey(ToNeko.pluginInstance, "nekolevel");
         //创建一个新的对象
         ItemStack itemStack = new ItemStack(Material.END_ROD);
         //获取物品的ItemMeta对象
