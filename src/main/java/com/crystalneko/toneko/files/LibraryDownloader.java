@@ -12,9 +12,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class downloadPlugin {
+public class LibraryDownloader {
     private ToNeko plugin;
-    public downloadPlugin(ToNeko plugin){
+
+    public LibraryDownloader(ToNeko plugin){
         this.plugin = plugin;
     }
     //下载插件
@@ -52,6 +53,7 @@ public class downloadPlugin {
         in.close();
         fileOutputStream.close();
     }
+
     //删除插件
     public void deletePlugin() {
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
@@ -72,6 +74,7 @@ public class downloadPlugin {
             }
         });
     }
+
     //下载文件的方法
     public static void downloadFile(String fileUrl, String saveFilePath) throws IOException {
         URL url = new URL(fileUrl);

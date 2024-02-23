@@ -9,7 +9,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
-import org.bukkit.event.player.PlayerChatEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.plugin.EventExecutor;
 
@@ -25,14 +24,12 @@ import java.util.Random;
 import static com.crystalneko.toneko.ToNeko.*;
 import static org.bukkit.Bukkit.getServer;
 
-public class nekoed implements Listener{
+public class NekoChatListener implements Listener{
     /*
     代码逻辑：
     玩家发送消息 -> 处理监听事件 -> 处理消息 -> 处理AI信息 -> AI发送消息
      */
-    private ToNeko plugin;
-    public nekoed(ToNeko plugin) {
-        this.plugin = plugin;
+    public void bootstrap(){
         //注册玩家聊天监听器
         try {
             //使用Paper的聊天监听器
@@ -40,20 +37,18 @@ public class nekoed implements Listener{
             logger.info(ToNeko.getMessage("folia.use.chatEvent"));
             getServer().getPluginManager().registerEvent(AsyncChatEvent.class,this, EventPriority.NORMAL,new EventExecutor() {
                 @Override
-                public void execute(Listener listener, Event event) throws EventException {
+                public void execute(Listener listener, Event event) {
                     onPlayerChatPaper((AsyncChatEvent) event);
                 }
-            },plugin);
+            }, pluginInstance);
         } catch (ClassNotFoundException e) {
             getServer().getPluginManager().registerEvent(org.bukkit.event.player.AsyncPlayerChatEvent.class,this, EventPriority.NORMAL,new EventExecutor() {
                 @Override
-                public void execute(Listener listener, Event event) throws EventException {
+                public void execute(Listener listener, Event event) {
                     onPlayerChat((org.bukkit.event.player.AsyncPlayerChatEvent) event);
                 }
-            },plugin);
+            },pluginInstance);
         }
-
-
     }
 
     public void sendMessage(String playerName, String prefix, String formattedMessage) {
@@ -92,6 +87,7 @@ public class nekoed implements Listener{
                     nekoList.add(key);
                 }
             }
+
             for (String str : nekoList) {
                 if (message.contains(str)) {
                     String owner = data.getString(str + ".owner");
@@ -161,9 +157,6 @@ public class nekoed implements Listener{
         sendMessageToPlayers(player.getName(), prefix, message, false);
     }
 
-
-
-
     public String catChatMessage(String message, String owner, List<String> aliases){
         //将玩家名称替换为主人
         message = message.replaceAll(owner, ToNeko.getMessage("other.owner"));
@@ -198,6 +191,7 @@ public class nekoed implements Listener{
 
         return builder.toString();
     }
+
     private String replaceBlocks(String message,String neko){
         //检查值是否存在
         if(sqlite.checkValueExists("nekoblockword", "neko", neko)) {
