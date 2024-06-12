@@ -75,3 +75,17 @@ enabled_platform_projects.each { project ->
         dependsOn project.tasks.named('shadowJar')
     }
 }
+
+task build(type: Copy) {
+    mustRunAfter( subprojects.collect { it.tasks.named('build') } )
+
+    def jarTasks = [ "jar", "remapJar", "sourcesJar", "javadocJar" ]
+    jarTasks.each { jarTask ->
+        subprojects.each { project ->
+            if (project.tasks.findByPath(jarTask)){
+                from(project.tasks.getByName(jarTask).outputs.files.singleFile)
+            }
+        }
+    }
+    into "$rootDir/out"
+}
