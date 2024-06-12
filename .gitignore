@@ -39,8 +39,3 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
-
-# hidden
-
-bukkit/src/main/java/io/github/silvigarabis/rplayneko/
-core/src/main/java/io/github/silvigarabis/rplayneko/
