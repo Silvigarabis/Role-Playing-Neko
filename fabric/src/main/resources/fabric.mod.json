@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "toneko",
+  "id": "role-playing-neko",
   "version": "${version}",
-  "name": "toNeko",
+  "name": "Neko!",
   "description": "可爱即是正义!",
   "authors": [
     "CrystalNeko"
@@ -17,7 +17,7 @@
     "homepage": "https://github.com/CSNeko/toNeko"
   },
   "license": "MIT",
-  "icon": "assets/toneko/icon.png",
+  "icon": "assets/rplayneko/icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
@@ -32,6 +32,7 @@
     "fabric": "*",
     "minecraft": ">=1.19",
     "ctlib": "*",
+    "fabric-permissions-api-v0": "*",
     "geckolib": "*"
   },
     "suggests": {

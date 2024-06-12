@@ -1,6 +1,46 @@
-run/*
-build/*
-/build/
-/.gradle/
-/run/
-/src/main/java/com/crystalneko/tonekofabric/test/
+# gradle
+
+.gradle/
+build/
+build-cache/
+out/
+classes/
+
+# eclipse
+
+*.launch
+
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# macos
+
+*.DS_Store
+
+# fabric
+
+run/
+
+# java
+
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+# hidden
+
+bukkit/src/main/java/io/github/silvigarabis/rplayneko/
+core/src/main/java/io/github/silvigarabis/rplayneko/

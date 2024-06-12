@@ -1,20 +1,26 @@
 pluginManagement {
     repositories {
+        mavenCentral()
+        gradlePluginPortal()
         maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
-        maven {
-            name = 'Spigot'
-            url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
-
-        }
-        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
-        maven { url = 'https://oss.sonatype.org/content/repositories/central' }
-        gradlePluginPortal()
     }
 }
-plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
+
+buildCache {
+    local {
+        directory = new File(rootDir, 'build-cache')
+        removeUnusedEntriesAfterDays = 30
+    }
 }
 
+include(":core")
+
+def enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
+enabled_platforms.each { platform ->
+    include(":" + platform)
+}
+
+rootProject.name = "role_playing_neko"

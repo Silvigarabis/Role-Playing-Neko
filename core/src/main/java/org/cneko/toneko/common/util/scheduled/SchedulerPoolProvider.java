@@ -1,15 +1,15 @@
 package org.cneko.toneko.common.util.scheduled;
 
-import org.cneko.toneko.bukkit.util.BukkitSchedulerPool;
-import org.cneko.toneko.bukkit.util.FoliaSchedulerPoolImpl;
-import org.cneko.toneko.fabric.util.FabricSchedulerPoolImpl;
+//import org.cneko.toneko.bukkit.util.BukkitSchedulerPool;
+//import org.cneko.toneko.bukkit.util.FoliaSchedulerPoolImpl;
+//import org.cneko.toneko.fabric.util.FabricSchedulerPoolImpl;
 import org.jetbrains.annotations.NotNull;
 
 public class SchedulerPoolProvider {
-    private static final ISchedulerPool INSTANCE;
+    public static ISchedulerPool INSTANCE;
 
-    static {
-        ISchedulerPool warpped;
+    /*static {
+        ISchedulerPool ;
 
         try {
             Class.forName("org.bukkit.Server"); //Check if is bukkit
@@ -27,7 +27,7 @@ public class SchedulerPoolProvider {
         }
 
         INSTANCE = warpped;
-    }
+    }*/
 
     @NotNull
     public static ISchedulerPool getINSTANCE() {

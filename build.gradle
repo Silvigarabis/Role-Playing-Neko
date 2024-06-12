@@ -1,114 +1,77 @@
-buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
-    dependencies {
-    }
-}
-
 plugins {
-    id 'fabric-loom' version '1.2-SNAPSHOT'
-    id 'org.jetbrains.kotlin.jvm' version '1.8.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
-version = project.mod_version
-group = project.maven_group
+println "RolePlayingNeko " + version
 
-repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
-    maven {
-        name = 'Spigot'
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+ext {
+    core_project = project(":core")
+
+    enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
+    enabled_platform_projects = enabled_platforms.collect { project(":" + it) }
+
+    ctlib_modrinth_project_id = properties["ctlib_modrinth_project_id"]
+    ctlib_version = properties["ctlib_version"]
+
+}
+
+println "platform(s) that enabled: " + enabled_platforms
+
+subprojects { project ->
+    def isPlatformProject = project in enabled_platform_projects
+
+    apply plugin: "java"
+    if (isPlatformProject){
+        apply plugin: "com.github.johnrengelman.shadow"
     }
-    maven { url = 'https://oss.sonatype.org/content/groups/public/' }
-    maven {
-        name = 'papermc'
-        url = 'https://repo.papermc.io/repository/maven-public/'
-    }
-    maven {
-        name = 'GeckoLib'
-        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-        content {
-            includeGroupByRegex("software\\.bernie.*")
-            includeGroup("com.eliotlash.mclib")
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = "Modrinth"
+            url = "https://api.modrinth.com/maven"
+            content {
+                includeGroup "maven.modrinth"
+            }
         }
     }
 
-    maven {
-        name = "Modrinth"
-        url = "https://api.modrinth.com/maven"
+    group = properties["maven_group"] as String
+    version = properties["version"] as String + "+" + project.name
+    description = properties["description"] as String
+    archives_base_name = properties["archives_base_name"] as String
+
+    base {
+        archivesName = project.archives_base_name
     }
 
-    mavenCentral()
-
-}
-
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation fileTree("libs")
-    compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
-    compileOnly 'net.luckperms:api:5.4'
-    modImplementation "me.lucko:fabric-permissions-api:0.2-SNAPSHOT"
-    modImplementation 'software.bernie.geckolib:geckolib-fabric-1.20.4:4.4.1'
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compileOnly 'dev.folia:folia-api:1.20.2-R0.1-SNAPSHOT'
-    //implementation "net.neoforged:neoforge:20.4.210"
-    //modImplementation "maven.modrinth:ctlib:aftzbFe4"
-}
-
-processResources {
-    inputs.property "version", project.version
-    inputs.property "minecraft_version", project.minecraft_version
-    inputs.property "loader_version", project.loader_version
-    filteringCharset "UTF-8"
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version,
-                "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version
+    dependencies {
+        implementation 'org.jetbrains:annotations:24.0.0'
+        if (isPlatformProject){
+            implementation(core_project)
+        }
     }
+
 }
 
-def targetJavaVersion = 17
-tasks.withType(JavaCompile).configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
-    it.options.encoding = "UTF-8"
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        it.options.release = targetJavaVersion
+enabled_platform_projects.each { project ->
+    def coreJarTask = core_project.tasks.getByName('jar')
+
+    project.tasks.getByName('shadowJar') {
+        // 在 :core:jar 后运行
+        mustRunAfter coreJarTask
+
+        // 添加 core
+        from coreJarTask.outputs.files.singleFile
+
+        // 配置shadowJar任务不包含任何依赖
+        configurations = []
+
+        // 文件无额外后缀
+        archiveClassifier = ""
     }
-}
 
-java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
-    archivesBaseName = project.archives_base_name
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-}
-
-kotlin {
-    jvmToolchain(17)
-}
-
-// 配置Javadoc生成
-javadoc {
-    options {
-        encoding = 'UTF-8' // 设置编码格式
+    project.tasks.named('build') {
+        dependsOn project.tasks.named('shadowJar')
     }
 }
