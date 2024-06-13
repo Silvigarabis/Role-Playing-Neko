@@ -1,18 +1,12 @@
 package io.github.silvigarabis.rplayneko.data;
 
-import java.util.UUID;
-import java.util.HashMap;
-import java.util.WeakHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.*;
 
 import io.github.silvigarabis.rplayneko.storage.IDataTarget;
 
-public class RPlayNekoDataSource<T> {
+public class RPlayNekoDataSource {
 
     private final Map<UUID, RPlayNekoData> dataMap = new ConcurrentHashMap<>();
     private final Map<UUID, RPlayNekoData> dataMapUnmodifiableCopy = Collections.unmodifiableMap(dataMap);
@@ -161,6 +155,13 @@ public class RPlayNekoDataSource<T> {
         }
         var data = getData(uuid);
         return dataTarget.saveToDisk(uuid, data);
+    }
+    public boolean unloadAllData(){
+        for (Map.Entry<UUID, RPlayNekoData> entry : dataMap.entrySet()){
+            dataTarget.saveToDisk(entry.getKey(), entry.getValue());
+            dataMap.remove(entry.getKey());
+        }
+        return true;
     }
     public boolean loadData(UUID uuid){
         if (dataMap.containsKey(uuid)){

@@ -6,16 +6,7 @@ import org.jetbrains.annotations.*;
 public class RPlayNekoConfig {
     public static class InvalidConfigException extends IllegalStateException {
         public InvalidConfigException(String configKey, Object invalidValue){
-            String errorMessage = "Invalid config for "
-                + configKey + ": ";
-            if (invalidValue == null){
-                errorMessage += "null";
-            } else {
-                try {
-                    errorMessage += invalidValue.getClass().getMethod("toString").invoke(invalidValue);
-                } catch (Throwable ignored){
-                }
-            }
+            super(buildMessage(configKey, invalidValue));
             this.configKey = configKey;
             this.invalidValue = invalidValue;
         }
@@ -24,9 +15,23 @@ public class RPlayNekoConfig {
             this.configKey = configKey;
             this.invalidValue = null;
         }
+        private static String buildMessage(String configKey, Object invalidValue){
+            String errorMessage = "Invalid config for " + configKey + ": ";
+
+            if (invalidValue == null){
+                errorMessage += "null";
+            } else {
+                try {
+                    errorMessage += invalidValue.getClass().getMethod("toString").invoke(invalidValue);
+                } catch (Throwable ignored){
+                }
+            }
+            return errorMessage;
+        }
         public final String configKey;
         public final @Nullable Object invalidValue;
     }
+
     public static enum RPlayNekoLanguage {
         zh_CN("zh_cn"), zh_cn("zh_cn"), zh("zh_cn"),
         en("en_us"), CUSTOM(true /* I wonder why I need it */);
@@ -48,12 +53,11 @@ public class RPlayNekoConfig {
             return langName;
         }
     }
+
     public static enum ChatNyaLocation {
         END, HEAD, CUSTOM /* why this exists? */
     }
 
-    /*public static RPlayNekoConfig loadFromYAML(){
-    }*/
     public int configVersion = 1;
     public RPlayNekoLanguage language = RPlayNekoLanguage.zh;
     public boolean feature_Neko_AddSpeakReplace = true; // 猫娘可以修改自己的发言替换配置

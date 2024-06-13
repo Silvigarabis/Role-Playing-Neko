@@ -4,9 +4,9 @@ import io.github.silvigarabis.rplayneko.RPlayNekoCore;
 
 import java.util.List;
 
-public abstract class Command<Instance, Sender, Player> {
-    protected RPlayNekoCore<Instance, Sender, Player> core;
-    public Command(RPlayNekoCore<Instance, Sender, Player> core){
+public abstract class Command<Sender, Player> {
+    protected RPlayNekoCore<Sender, Player> core;
+    public Command(RPlayNekoCore<Sender, Player> core){
         this.core = core;
     }
     public abstract String getLabel();

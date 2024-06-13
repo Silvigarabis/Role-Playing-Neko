@@ -4,8 +4,8 @@ import io.github.silvigarabis.rplayneko.RPlayNekoCore;
 
 import java.util.List;
 
-public class CommandRPlayNeko<Instance, Sender, Player> extends Command<Instance, Sender, Player> {
-    public CommandRPlayNeko(RPlayNekoCore<Instance, Sender, Player> core){
+public class CommandRPlayNeko<Sender, Player> extends Command<Sender, Player> {
+    public CommandRPlayNeko(RPlayNekoCore<Sender, Player> core){
         super(core);
     }
     @Override

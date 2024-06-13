@@ -14,7 +14,7 @@ import java.util.regex.Matcher;
  *
  * TODO: 统一命名
  */
-public class Messages<Instance, Sender, Player> {
+public class Messages<Sender, Player> {
     public enum MessageKey {
         COMMAND_NO_PERMISSION("command-no-permission"),
         COMMAND_UNKNOWN("command-unknown"),
@@ -62,11 +62,6 @@ public class Messages<Instance, Sender, Player> {
         }
     }
 
-    public Messages(Platform<Instance, Sender, Player> platform){
-        this.platform = platform;
-    }
-    private Platform<Instance, Sender, Player> platform;
-
     private static String DEFAULT_LOGGER_NAME = "RPlayNeko";
     private static Map<MessageKey, String> messages = new EnumMap<MessageKey, String>(MessageKey.class);
     public static List<MessageKey> getMissingMessageKeys(){
@@ -81,10 +76,12 @@ public class Messages<Instance, Sender, Player> {
     public static void cleanMessageConfig(){
         messages.clear();
     }
-    public void loadMessageConfig(Map<String, String> messageConfig){
+    public static void loadMessageConfig(Map<String, String> messageConfig){
         for (Object messageKeyObject : MessageKey.values()){
             MessageKey messageKey = (MessageKey) messageKeyObject;
+
             String key = messageKey.getMessageKey();
+
             String messageString = messageConfig.get(key);
             if (messageString == null){
                 continue;
@@ -92,13 +89,14 @@ public class Messages<Instance, Sender, Player> {
             messages.put(messageKey, messageString);
         }
     }
+
     public static String getMessageString(MessageKey messageKey, boolean translateColorCode){
         var string = messages.get(messageKey);
-        if (string == null || string.length() == 0){
+        if (string == null){
             string = messageKey.getDefaultString();
         }
 
-        if (string == null || string.length() == 0){
+        if (string == null){
             string = messageKey.getMessageKey();
         } else if (translateColorCode){
             string = string.replaceAll("&([0-9a-fmnol])", "§$1");
@@ -128,6 +126,11 @@ public class Messages<Instance, Sender, Player> {
        }
        return getMessage(key, fullReplacements);
     }
+
+    public Messages(Platform<Sender, Player> platform){
+        this.platform = platform;
+    }
+    private Platform<Sender, Player> platform;
 
     public String getMessage(Player player, MessageKey key, String[] replacements){
         return getMessage(key, replacements);
@@ -160,8 +163,13 @@ public class Messages<Instance, Sender, Player> {
     }
 
     public void send(Sender sender, String message){
+        var prefix = getMessageString(MessageKey.CHAT_PREFIX);
+        if (prefix.length() > 0){
+            prefix += " ";
+        }
+
         for (var line : message.split("\n")){
-            line = getMessageString(MessageKey.CHAT_PREFIX) + " " + line;
+            line = prefix + line;
             this.platform.sendMessage(sender, line);
         }
     }

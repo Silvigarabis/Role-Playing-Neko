@@ -4,76 +4,100 @@ import io.github.silvigarabis.rplayneko.event.*;
 import io.github.silvigarabis.rplayneko.data.*;
 import io.github.silvigarabis.rplayneko.power.*;
 import io.github.silvigarabis.rplayneko.command.*;
+import io.github.silvigarabis.rplayneko.storage.IDataTarget;
 
 import org.jetbrains.annotations.*;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.*;
 
-public class RPlayNekoCore<Instance, Sender, Player> {
-    private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMap = new WeakHashMap<>();
-    public synchronized RPlayNekoPlayer<Player> getNekoPlayer(@NotNull UUID uuid, @NotNull Player origin){
-        if (nekoPlayerOriginMap.containsKey(origin)){
-            return nekoPlayerOriginMap.get(origin);
+public class RPlayNekoCore<Sender, Player> {
+    private static RPlayNekoCore<?, ?> INSTANCE = null;
+    public static RPlayNekoCore<?, ?> getInstance(){
+        if (INSTANCE == null){
+            throw new IllegalStateException("core not init");
         }
-        var player = new RPlayNekoPlayer<Player>(uuid, this.dataSource, origin, this);
-        nekoPlayerOriginMap.put(origin, player);
+        return INSTANCE;
+    }
+    public static @Nullable RPlayNekoPlayer<?> Instance_getNekoPlayer(@NotNull UUID uuid){
+        return getInstance().getNekoPlayer(uuid);
+    }
+
+    private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMap = new WeakHashMap<>();
+    public @NotNull RPlayNekoPlayer<Player> getNekoPlayer(@NotNull UUID uuid, @NotNull Player origin){
+        RPlayNekoPlayer<Player> player;
+        synchronized(nekoPlayerOriginMap){
+            if (nekoPlayerOriginMap.containsKey(origin)){
+                return nekoPlayerOriginMap.get(origin);
+            }
+        
+            player = platform.newRPlayNekoPlayer(uuid, this, origin);
+            nekoPlayerOriginMap.put(origin, player);
+        }
         dataSource.markDirty(uuid);
         return player;
     }
+    public @Nullable RPlayNekoPlayer<Player> getNekoPlayer(@NotNull UUID uuid){
+        Player player = platform.getPlayerByUuid(uuid);
+        synchronized(nekoPlayerOriginMap){
+            return nekoPlayerOriginMap.get(player);
+        }
+    }
 
-    private RPlayNekoDataSource<Player> dataSource;
-    public RPlayNekoDataSource<Player> getDataSource(){
+    private RPlayNekoDataSource dataSource;
+    public RPlayNekoDataSource getDataSource(){
         return dataSource;
     }
-    private static RPlayNekoCore<?, ?, ?> instance;
-    public static RPlayNekoCore<?, ?, ?> getInstance(){
-        return instance;
-    }
+
     private RPlayNekoConfig config;
     public RPlayNekoConfig getConfig(){
         return config;
     }
-    private Platform<Instance, Sender, Player> platform;
+
     private Class<Player> PlayerClass;
+
+    private Platform<Sender, Player> platform;
     public Platform getPlayform(){
         return platform;
     }
+
     public Logger getLogger(){
         return platform.getLogger();
     }
+
     public void reloadConfig(){
-        if (this.config != null){
-            platform.saveCoreConfig(this.config);
-        }
         this.config = platform.getCoreConfig();
     }
-    private Messages<Instance, Sender, Player> messages;
-    public Messages<Instance, Sender, Player> getMessages(){
+
+    private Messages<Sender, Player> messages;
+    public Messages<Sender, Player> getMessages(){
         return messages;
     }
-    public RPlayNekoCore(Platform platform, Class<Player> PlayerClass){
+
+    public RPlayNekoCore(Platform platform, Class<Player> PlayerClass, IDataTarget dataTarget){
         this.platform = platform;
         this.PlayerClass = PlayerClass;
         this.messages = new Messages(platform);
-        reloadConfig();
-        this.dataSource = new RPlayNekoDataSource<>(platform.getCoreDataTarget());
-        instance = this;
+        this.config = platform.getCoreConfig();
+        this.dataSource = new RPlayNekoDataSource(dataTarget);
+        INSTANCE = this;
     }
-    public void addTickImpl(Consumer<RPlayNekoPlayer<?>> tickImpl){
-        RPlayNekoPlayer.addTickImpl(PlayerClass, tickImpl);
+
+    public void stop(){
+        this.dataSource.unloadAllData();
     }
-    public void addPowerTypeTickImpl(RPlayNekoPowers type, Consumer<RPlayNekoPlayer<?>> tickImpl){
-        RPlayNekoPowers.addPowerTypeTickImpl(type, PlayerClass, tickImpl);
+
+    public RPlayNekoPower<Player> newPowerInstance(RPlayNekoPowerType type, RPlayNekoPlayer<Player> player){
+        return platform.getPowerFactory().newPowerInstance(type, player);
     }
+
     public void registerCommands(){
         this.platform.registerCommand(new CommandRPlayNeko(this));
     }
+
     public boolean checkPermission(Sender sender, String permission){
         return this.platform.checkPermission(sender, "rplayneko." + permission);
     }
+
     public ChatEvent<Player> onChatEvent(ChatEvent<Player> event){
         return event;
     }
