@@ -3,7 +3,7 @@ version: '0.4.6'
 main: com.crystalneko.toneko.ToNeko
 api-version: '1.16'
 author: CrystalNeko
-softdepend: [ctLib]
+depend: [ctLib]
 folia-supported: true
 commands:
   toneko:

@@ -67,7 +67,7 @@ public class PlayerEventListenerBase implements Listener {
             // 获取物品的ItemMeta对象
             ItemMeta itemMeta = itemStack.getItemMeta();
             //定义NBT标签
-            NamespacedKey key = new NamespacedKey(ToNeko.pluginInstance, "neko");
+            NamespacedKey key = new NamespacedKey(ToNeko.getInstance(), "neko");
             // 检查物品是否含有该自定义NBT标签
             if (itemMeta.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {
                 // 读取NBT标签的值
@@ -119,8 +119,8 @@ public class PlayerEventListenerBase implements Listener {
                     // 获取物品的ItemMeta对象
                     ItemMeta itemMeta = itemStack.getItemMeta();
                     //定义NBT标签
-                    NamespacedKey key = new NamespacedKey(ToNeko.pluginInstance, "neko");
-                    NamespacedKey key2 = new NamespacedKey(ToNeko.pluginInstance, "nekolevel");
+                    NamespacedKey key = new NamespacedKey(ToNeko.getInstance(), "neko");
+                    NamespacedKey key2 = new NamespacedKey(ToNeko.getInstance(), "nekolevel");
                     Consumer<YamlConfiguration> callback = null;
                     // 检查物品是否含有该自定义NBT标签
                     if (itemMeta != null && itemMeta.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {

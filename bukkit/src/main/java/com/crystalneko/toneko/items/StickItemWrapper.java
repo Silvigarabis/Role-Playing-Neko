@@ -30,7 +30,7 @@ public class StickItemWrapper {
     
     public static ItemStack wrapStickItem(){
         // 创建一个NamespacedKey，用于唯一标识NBT标签
-        NamespacedKey key = new NamespacedKey(ToNeko.pluginInstance, "neko");
+        NamespacedKey key = new NamespacedKey(ToNeko.getInstance(), "neko");
         //创建一个新的木棍对象
         ItemStack itemStack = new ItemStack(Material.STICK);
         //获取物品的ItemMeta对象
@@ -62,7 +62,7 @@ public class StickItemWrapper {
     
     public static ItemStack wrapStickItemLevel2(){
         // 创建一个NamespacedKey，用于唯一标识NBT标签
-        NamespacedKey key = new NamespacedKey(ToNeko.pluginInstance, "nekolevel");
+        NamespacedKey key = new NamespacedKey(ToNeko.getInstance(), "nekolevel");
         //创建一个新的对象
         ItemStack itemStack = new ItemStack(Material.END_ROD);
         //获取物品的ItemMeta对象

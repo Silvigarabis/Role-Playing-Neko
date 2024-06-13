@@ -22,28 +22,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static com.crystalneko.toneko.ToNeko.*;
 import static org.bukkit.Bukkit.getServer;
 import static org.cneko.ctlib.common.util.LocalDataBase.Connections.sqlite;
 import static com.crystalneko.toneko.ToNeko.config;
-public class NekoChatListener implements Listener{
-    private final File dataFile = new File( "plugins/toNeko/nekos.yml");
-    private final YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+
+public class NekoChatListener implements Listener {
+    private final ToNeko plugin;
 
     /*
     代码逻辑：
     玩家发送消息 -> 处理监听事件 -> 处理消息 -> 处理AI信息 -> AI发送消息
      */
-    public void bootstrap(){
-        //注册玩家聊天监听器
-        try {
-            //使用Paper的聊天监听器
-            Class.forName("io.papermc.paper.event.player.AsyncChatEvent");
-            logger.info(ToNeko.getMessage("folia.use.chatEvent"));
-            getServer().getPluginManager().registerEvent(AsyncChatEvent.class,this, EventPriority.NORMAL, (listener, event) -> onPlayerChatPaper((AsyncChatEvent) event), pluginInstance);
-        } catch (ClassNotFoundException e) {
-            getServer().getPluginManager().registerEvent(org.bukkit.event.player.AsyncPlayerChatEvent.class,this, EventPriority.NORMAL, (listener, event) -> onPlayerChat((org.bukkit.event.player.AsyncPlayerChatEvent) event),pluginInstance);
-        }
+    public NekoChatListener(@NotNull ToNeko plugin){
+        this.plugin = plugin;
     }
 
     public void sendMessage(String playerName, String prefix, String formattedMessage) {
@@ -107,7 +98,7 @@ public class NekoChatListener implements Listener{
                             try {
                                 response = SimpleHttpGet.getJson(url, null);
                             } catch (Exception e) {
-                                ToNeko.pluginInstance.getLogger().warning("无法获取json:" + e.getMessage());
+                                ToNeko.getInstance().getLogger().warning("无法获取json:" + e.getMessage());
                             }
 
                             //读取响应

@@ -11,7 +11,7 @@ public class StickItemRecipeRegistry {
 
     public static void registerRecipe(){
         // 创建一个具有特定形状的合成配方
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(ToNeko.pluginInstance, "toneko.item.stickLevel2"), StickItemWrapper.wrapStickItemLevel2());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(ToNeko.getInstance(), "toneko.item.stickLevel2"), StickItemWrapper.wrapStickItemLevel2());
         // 设置合成配方的形状
         /*
          牛奶 | 一级棍 | 牛奶
