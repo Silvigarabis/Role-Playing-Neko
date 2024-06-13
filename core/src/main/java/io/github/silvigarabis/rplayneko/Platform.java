@@ -13,6 +13,10 @@ import org.cneko.toneko.common.util.scheduled.ISchedulerPool;
 public interface Platform<Sender, Player> {
     PlatformType getPlatformType();
 
+    default String getPlatformName(){
+        return getPlatformInstance().getClass().toString();
+    }
+
     default Object getPlatformInstance(){
         return this;
     }
@@ -22,6 +26,8 @@ public interface Platform<Sender, Player> {
     Logger getLogger();
 
     void sendMessage(Sender sender, String message);
+
+    void sendPlayerMessage(Player player, String message);
 
     Player getPlayerByUuid(UUID uuid);
 

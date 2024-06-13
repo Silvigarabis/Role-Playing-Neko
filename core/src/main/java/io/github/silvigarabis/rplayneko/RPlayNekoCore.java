@@ -6,6 +6,8 @@ import io.github.silvigarabis.rplayneko.power.*;
 import io.github.silvigarabis.rplayneko.command.*;
 import io.github.silvigarabis.rplayneko.storage.IDataTarget;
 
+import com.crystalneko.tonekocommon.util.StringUtil;
+
 import org.jetbrains.annotations.*;
 import java.util.logging.Logger;
 import java.util.*;
@@ -99,6 +101,52 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     public ChatEvent<Player> onChatEvent(ChatEvent<Player> event){
+        // replace
+        if (getConfig().feature_SpeakReplaceAlways || (getConfig().feature_SpeakReplace && event.player.isNeko())){
+
+            boolean isEnabledRegex = getConfig().feature_SpeakReplace_Regex;
+            for (Map.Entry<String, String> entry : event.player.getSpeakReplaces().entrySet()){
+                String pattern = entry.getKey();
+                String replacement = entry.getValue();
+
+                boolean isRegex = false;
+                if (isEnabledRegex && pattern.length() > 2 && pattern.startsWith("/") && pattern.endsWith("/")){
+                    isRegex = true;
+                }
+
+                if (isRegex){
+                    pattern = pattern.substring(1, pattern.length() - 1);
+                    event.message = StringUtil.timeLimitedReplaceAll(event.message, pattern, replacement);
+                } else {
+                    event.message = event.message.replace(pattern, replacement);
+                }
+            }
+
+            event.result = EventResult.MODIFIED;
+        }
+
+        // append nya
+        if (getConfig().feature_ChatNya && event.player.isNeko()){
+            switch (getConfig().feature_ChatNya_Location){
+                case END:
+                    event.chatSuffix = event.player.getNyaText();
+                    break;
+                case HEAD:
+                    event.chatPrefix = event.player.getNyaText() + " ";
+                    break;
+                case CUSTOM:
+                default:
+                    break;
+            }
+            event.result = EventResult.MODIFIED;
+        }
+
+        // mute
+        if (event.player.isNeko() && event.player.isMuted()){
+            event.result = EventResult.CANCELLED;
+            getMessages().sendPlayer(event.player.getOrigin(), Messages.MessageKey.NEKO_CHAT_MUTED);
+        }
+
         return event;
     }
 }

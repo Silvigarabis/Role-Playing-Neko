@@ -37,9 +37,12 @@ public class Messages<Sender, Player> {
         PLUGIN_MESSAGE_CONFIG_LOAD_MISSING("console-message.plugin-message-config-missing", "缺失 {} 条消息文本： {}"),
 
         NEKO_CALL_MASTER_NAME("neko-call-master-name"),
+        NEKO_NOTICE_MUTED("neko-notice-muted"),
+        NEKO_NOTICE_UNMUTED("neko-notice-unmuted"),
+        NEKO_CHAT_MUTED("neko-chat-muted"),
         NEKO_CHAT_PREFIX("neko-chat-prefix"),
 
-        CHAT_PREFIX("chat-prefix", "[RPlayNeko]"),
+        CHAT_PREFIX("chat-prefix", "[RPlay@Neko]"),
         LOGGER_NAME("logger-name", "RPlayNeko");
 
         private String messageKey = null;
@@ -174,6 +177,33 @@ public class Messages<Sender, Player> {
         }
     }
     
+    public void sendPlayer(Player sender, MessageKey key, String replacement, String... replacements){
+        String[] fullReplacements = new String[replacements.length + 1];
+        fullReplacements[0] = replacement;
+        for (int idx = 1; idx <= replacements.length; idx++){
+           fullReplacements[idx] = replacements[idx - 1];
+        }
+        sendPlayer(sender, key, fullReplacements);
+    }
+    public void sendPlayer(Player sender, MessageKey key, String[] replacements){
+        sendPlayer(sender, getMessage(key, replacements));
+    }
+    public void sendPlayer(Player sender, MessageKey key){
+        sendPlayer(sender, getMessageString(key));
+    }
+
+    public void sendPlayer(Player sender, String message){
+        var prefix = getMessageString(MessageKey.CHAT_PREFIX);
+        if (prefix.length() > 0){
+            prefix += " ";
+        }
+
+        for (var line : message.split("\n")){
+            line = prefix + line;
+            this.platform.sendPlayerMessage(sender, line);
+        }
+    }
+
     public void consoleLog(java.util.logging.Level level, MessageKey key, String replacement, String... replacements){
         String[] fullReplacements = new String[replacements.length + 1];
         fullReplacements[0] = replacement;
