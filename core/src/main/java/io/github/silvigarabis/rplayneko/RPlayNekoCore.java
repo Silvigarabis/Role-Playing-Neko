@@ -100,7 +100,7 @@ public class RPlayNekoCore<Sender, Player> {
 
     public void reload(){
         this.dataSource.close();
-        this.dataSource = null:
+        this.dataSource = null;
         this.reloadConfig();
         this.initDataSource();
     }
