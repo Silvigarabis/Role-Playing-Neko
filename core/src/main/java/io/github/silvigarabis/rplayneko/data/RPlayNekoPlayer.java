@@ -23,6 +23,9 @@ public abstract class RPlayNekoPlayer<T> {
 
     private final @NotNull RPlayNekoDataSource dataSource;
     public RPlayNekoDataSource getDataSource(){
+        if (dataSource == null || dataSource.isClosed()){
+            this.dataSource = core.getDataSource();
+        }
         return dataSource;
     }
 
@@ -30,27 +33,26 @@ public abstract class RPlayNekoPlayer<T> {
         this.uuid = uuid;
         this.core = core;
         this.origin = origin;
-        this.dataSource = core.getDataSource();
     }
 
     public boolean isNeko(){
-        return dataSource.isNeko(uuid);
+        return getDataSource().isNeko(uuid);
     }
     public boolean nekoAddWithOwner(@NotNull UUID owner){
-        return dataSource.addNeko(uuid, owner);
+        return getDataSource().addNeko(uuid, owner);
     }
     public boolean nekoAdd(){
-        return dataSource.addNeko(uuid, null);
+        return getDataSource().addNeko(uuid, null);
     }
     public boolean nekoRemove(){
-        return dataSource.removeNeko(uuid);
+        return getDataSource().removeNeko(uuid);
     }
 
     public void setSelfTransform(boolean mode){
-        dataSource.setSelfTransform(uuid, mode);
+        getDataSource().setSelfTransform(uuid, mode);
     }
     public boolean isSelfTransform(){
-        return dataSource.isSelfTransform(uuid);
+        return getDataSource().isSelfTransform(uuid);
     }
 
     public void addOwner(@NotNull UUID ownerUUID){
@@ -58,86 +60,86 @@ public abstract class RPlayNekoPlayer<T> {
             setOwner(ownerUUID);
         }
         if (core.getConfig().feature_Neko_MultiOwner){
-            dataSource.getMultiOwners(uuid).add(ownerUUID);
-            dataSource.markDirty(uuid);
+            getDataSource().getMultiOwners(uuid).add(ownerUUID);
+            getDataSource().markDirty(uuid);
         }
     }
     public void setOwner(@Nullable UUID ownerUUID){
         if (!core.getConfig().feature_Neko_MultiOwner){
-            dataSource.getMultiOwners(uuid).clear();
-            dataSource.markDirty(uuid);
+            getDataSource().getMultiOwners(uuid).clear();
+            getDataSource().markDirty(uuid);
         }
-        dataSource.getMultiOwners(uuid).add(ownerUUID);
-        dataSource.setOwner(uuid, ownerUUID);
+        getDataSource().getMultiOwners(uuid).add(ownerUUID);
+        getDataSource().setOwner(uuid, ownerUUID);
     }
     public @Nullable UUID getOwner(){
-        return dataSource.getOwner(uuid);
+        return getDataSource().getOwner(uuid);
     }
     public boolean isOwner(@NotNull UUID personUUID){
         if (core.getConfig().feature_Neko_MultiOwner){
-            return dataSource.getMultiOwners(uuid).contains(personUUID);
+            return getDataSource().getMultiOwners(uuid).contains(personUUID);
         }
-        return personUUID != null && personUUID.equals(dataSource.getOwner(uuid));
+        return personUUID != null && personUUID.equals(getDataSource().getOwner(uuid));
     }
 
     public void setNyaText(@Nullable String text){
-        dataSource.setNya(uuid, text);
+        getDataSource().setNya(uuid, text);
     }
     public @Nullable String getNyaText(){
-        return dataSource.getNya(uuid);
+        return getDataSource().getNya(uuid);
     }
     public boolean hasNyaText(){
         return getNyaText() != null;
     }
 
     public void setMuted(boolean enabled){
-        dataSource.setMuted(uuid, enabled);
+        getDataSource().setMuted(uuid, enabled);
     }
     public boolean isMuted(){
-        return dataSource.isMuted(uuid);
+        return getDataSource().isMuted(uuid);
     }
 
     public boolean addMasterAlias(@NotNull String masterAlias){
         return addSpeakReplace(masterAlias, core.getMessages().getMessage(this.origin, Messages.MessageKey.NEKO_CALL_MASTER_NAME));
     }
     public boolean addSpeakReplace(@NotNull String pattern, @NotNull String replacement){
-        return dataSource.addSpeakReplace(uuid, pattern, replacement);
+        return getDataSource().addSpeakReplace(uuid, pattern, replacement);
     }
     public boolean removeSpeakReplace(@NotNull String pattern){
-        return dataSource.removeSpeakReplace(uuid, pattern);
+        return getDataSource().removeSpeakReplace(uuid, pattern);
     }
     /**
      * 对该Map的修改后，应该使用 {RPlayerNekoDataSource#markDirty} 标记
      */
     public @NotNull @Unmodifiable Map<String, String> getSpeakReplaces(){
-        return Collections.unmodifiableMap(dataSource.getSpeakReplaces(uuid));
+        return Collections.unmodifiableMap(getDataSource().getSpeakReplaces(uuid));
     }
 
     private final Set<RPlayNekoPower<T>> EnabledPowers = ConcurrentHashMap.newKeySet();
     private void saveEnabledPowers(){
-        Set<String> powerData = dataSource.getEnabledPowers(uuid);
+        Set<String> powerData = getDataSource().getEnabledPowers(uuid);
         powerData.clear();
         for (var power : EnabledPowers){
             powerData.add(power.type.name);
         }
-        dataSource.markDirty(uuid);
+        getDataSource().markDirty(uuid);
     }
     private void loadEnabledPowers(){
-        dataSource.getEnabledPowers(uuid).stream().forEach(powerName -> {
+        getDataSource().getEnabledPowers(uuid).stream().forEach(powerName -> {
             EnabledPowers.add(core.newPowerInstance(RPlayNekoPowerType.Powers.get(powerName), this));
         });
     }
 
     public boolean addPower(@NotNull RPlayNekoPowerType powerType){
         boolean result = EnabledPowers.add(core.newPowerInstance(powerType, this));
-        dataSource.getEnabledPowers(uuid).add(powerType.name);
-        dataSource.markDirty(uuid);
+        getDataSource().getEnabledPowers(uuid).add(powerType.name);
+        getDataSource().markDirty(uuid);
         return result;
     }
     public boolean removePower(@NotNull RPlayNekoPowerType powerType){
         boolean result = EnabledPowers.removeIf(power -> power.type == powerType);
-        dataSource.getEnabledPowers(uuid).remove(powerType.name);
-        dataSource.markDirty(uuid);
+        getDataSource().getEnabledPowers(uuid).remove(powerType.name);
+        getDataSource().markDirty(uuid);
         return result;
     }
     public @NotNull Set<RPlayNekoPowerType> getEnabledPowers(){
@@ -165,7 +167,7 @@ public abstract class RPlayNekoPlayer<T> {
             return false;
         }
         RPlayNekoPlayer oplayer = (RPlayNekoPlayer)o;
-        return this.uuid.equals(oplayer.uuid) && this.dataSource.equals(oplayer.dataSource);
+        return this.uuid.equals(oplayer.uuid) && this.getDataSource().equals(oplayer.getDataSource());
     }
     @Override
     public int hashCode(){
@@ -173,7 +175,7 @@ public abstract class RPlayNekoPlayer<T> {
         int result = 1;
 
         result = prime * result + this.uuid.hashCode();
-        result = prime * result + this.dataSource.hashCode();
+        result = prime * result + this.getDataSource().hashCode();
 
         return result;
     }

@@ -13,6 +13,7 @@ public class RPlayNekoDataSource {
     private final IDataTarget dataTarget;
 
     public @UnmodifiableView @NotNull Map<UUID, RPlayNekoData> getDataMap(){
+        checkIsClosed();
         return dataMapUnmodifiableCopy;
     }
 
@@ -113,6 +114,7 @@ public class RPlayNekoDataSource {
     }
 
     public RPlayNekoData createData(UUID uuid){
+        checkIsClosed();
         if (dataMap.containsKey(uuid)){
             throw new IllegalStateException("data of " + uuid.toString() + "already loaded");
         }
@@ -121,6 +123,7 @@ public class RPlayNekoDataSource {
         return data;
     }
     public boolean removeData(@NotNull UUID uuid, boolean inDisk){
+        checkIsClosed();
         if (inDisk){
             dataTarget.deleteInDisk(uuid);
         }
@@ -131,18 +134,22 @@ public class RPlayNekoDataSource {
         return result;
     }
     public boolean removeData(@NotNull UUID uuid){
+        checkIsClosed();
         return removeData(uuid, false);
     }
     public @NotNull RPlayNekoData getData(@NotNull UUID uuid){
+        checkIsClosed();
         if (!dataMap.containsKey(uuid)){
             throw new IllegalStateException("data of " + uuid.toString() + "have not been load");
         }
         return dataMap.get(uuid);
     }
     public boolean hasData(UUID uuid){
+        checkIsClosed();
         return dataMap.containsKey(uuid);
     }
     public boolean saveData(UUID uuid){
+        checkIsClosed();
         if (!hasData(uuid)){
             return false;
         }
@@ -150,20 +157,15 @@ public class RPlayNekoDataSource {
         return dataTarget.saveToDisk(uuid, data);
     }
     public boolean unloadData(UUID uuid){
+        checkIsClosed();
         if (!dataMap.containsKey(uuid)){
             return false;
         }
         var data = getData(uuid);
         return dataTarget.saveToDisk(uuid, data);
     }
-    public boolean unloadAllData(){
-        for (Map.Entry<UUID, RPlayNekoData> entry : dataMap.entrySet()){
-            dataTarget.saveToDisk(entry.getKey(), entry.getValue());
-            dataMap.remove(entry.getKey());
-        }
-        return true;
-    }
     public boolean loadData(UUID uuid){
+        checkIsClosed();
         if (dataMap.containsKey(uuid)){
             return false;
         }
@@ -175,6 +177,7 @@ public class RPlayNekoDataSource {
         return result;
     }
     public RPlayNekoData fetchData(UUID uuid){
+        checkIsClosed();
         if (hasData(uuid)){
             return getData(uuid);
         }
@@ -182,5 +185,39 @@ public class RPlayNekoDataSource {
             return getData(uuid);
         }
         return createData(uuid);
+    }
+    /**
+     * 保存所有数据到dataTarget，并清空数据源
+     */
+    public boolean unloadAllData(){
+        checkIsClosed();
+        for (Map.Entry<UUID, RPlayNekoData> entry : dataMap.entrySet()){
+            dataTarget.saveToDisk(entry.getKey(), entry.getValue());
+            dataMap.remove(entry.getKey());
+        }
+        return true;
+    }
+    private boolean isClosed = false;
+    public boolean isClosed(){
+        return isClosed;
+    }
+    /**
+     * 关闭此数据源，不会写入数据到dataTarget
+     */
+    public boolean close(){
+        if (!this.isClosed){
+            this.dataMap.clear();
+            this.isClosed = true;
+            this.dataTarget.close();
+            this.dataTarget = null;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public void checkIsClosed(){
+        if (this.isClosed){
+            throw new IllegalStateException("dataSource already closed!");
+        }
     }
 }

@@ -47,15 +47,43 @@ public class RPlayNekoCore<Sender, Player> {
 
     private RPlayNekoDataSource dataSource;
     public RPlayNekoDataSource getDataSource(){
+        if (dataSource == null){
+            throw new IllegalStateException("dataSource not initiated");
+        }
         return dataSource;
+    }
+    public boolean initDataSource(){
+        if (dataSource == null){
+            return false;
+        }
+        this.dataSource = new RPlayNekoDataSource(this.platform.getDataTarget());
+        return true;
+    }
+    public void reloadData(){
+        if (this.dataSource != null){
+            this.dataSource = null;
+            this.dataSource.close();
+        }
+        this.initDataSource();
     }
 
     private RPlayNekoConfig config;
     public RPlayNekoConfig getConfig(){
         return config;
     }
+    private void reloadConfig(){
+        this.config = platform.getCoreConfig();
+        var messageConfig = platform.getMessageConfig();
+        Messages.cleanMessageConfig();
+        Messages.loadMessageConfig(messageConfig);
+    }
 
-    private Class<Player> PlayerClass;
+    public RPlayNekoCore(Platform platform){
+        this.platform = platform;
+        this.messages = new Messages(platform);
+        this.reloadConfig();
+        INSTANCE = this;
+    }
 
     private Platform<Sender, Player> platform;
     public Platform getPlayform(){
@@ -65,34 +93,29 @@ public class RPlayNekoCore<Sender, Player> {
     public Logger getLogger(){
         return platform.getLogger();
     }
-
-    public void reloadConfig(){
-        this.config = platform.getCoreConfig();
-    }
-
     private Messages<Sender, Player> messages;
     public Messages<Sender, Player> getMessages(){
         return messages;
     }
 
-    public RPlayNekoCore(Platform platform, Class<Player> PlayerClass, IDataTarget dataTarget){
-        this.platform = platform;
-        this.PlayerClass = PlayerClass;
-        this.messages = new Messages(platform);
-        this.config = platform.getCoreConfig();
-        this.dataSource = new RPlayNekoDataSource(dataTarget);
-        INSTANCE = this;
+    public void reload(){
+        this.dataSource.close();
+        this.dataSource = null:
+        this.reloadConfig();
+        this.initDataSource();
     }
 
     public void stop(){
         this.dataSource.unloadAllData();
+        this.dataSource.close();
+        this.dataSource = null;
     }
 
     public RPlayNekoPower<Player> newPowerInstance(RPlayNekoPowerType type, RPlayNekoPlayer<Player> player){
         return platform.getPowerFactory().newPowerInstance(type, player);
     }
 
-    public void registerCommands(){
+    private void registerCommands(){
         this.platform.registerCommand(new CommandRPlayNeko(this));
     }
 
