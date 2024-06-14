@@ -1,0 +1,21 @@
+apply plugin: "java"
+apply plugin: "com.github.johnrengelman.shadow"
+
+configurations {
+    shadow
+}
+
+dependencies {
+    shadow project(":core")
+    shadow project(":configloader")
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+
+    archiveClassifier = ""
+}
+
+tasks.named("build") {
+    dependsOn("shadowJar")
+}

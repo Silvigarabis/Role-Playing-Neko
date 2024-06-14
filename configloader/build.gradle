@@ -1,0 +1,31 @@
+apply plugin: 'java-library'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+configurations {
+    shadow
+}
+
+dependencies {
+    everyprojects.each { project ->
+        if (project.name.startsWith("configloader_")){
+            shadow project
+            compileOnly project
+            println "configloader included " + project.name
+        }
+    }
+    // https://mvnrepository.com/artifact/org.yaml/snakeyaml
+    compileOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
+
+    // https://github.com/google/gson
+    compileOnly 'com.google.code.gson:gson:2.11.0'
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+
+    archiveClassifier = ""
+}
+
+tasks.named("build") {
+    dependsOn("shadowJar")
+}

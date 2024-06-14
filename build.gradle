@@ -6,12 +6,12 @@ println "RolePlayingNeko " + version
 
 ext {
     core_project = project(":core")
+    common_project = project(":common")
 
     enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
     enabled_platform_projects = enabled_platforms.collect { project(":" + it) }
 
-    ctlib_modrinth_project_id = properties["ctlib_modrinth_project_id"]
-    ctlib_version = properties["ctlib_version"]
+    ctlibmod_version = properties["ctlibmod_version"]
 
 }
 
@@ -25,6 +25,7 @@ allprojects {
 
 subprojects { project ->
     def isPlatformProject = project in enabled_platform_projects
+    def isConfigLoaderProject  = project.name.startsWith("configloader")
 
     apply plugin: "java"
     if (isPlatformProject){
@@ -48,35 +49,31 @@ subprojects { project ->
     archives_base_name = properties["archives_base_name"] as String
 
     base {
-        archivesName = project.archives_base_name
+        archivesName = archives_base_name
+    }
+
+    configurations {
+        shadow
     }
 
     dependencies {
         implementation 'org.jetbrains:annotations:24.0.0'
+        implementation 'maven.modrinth:ctlibmod:${ctlibmod_version}'
         if (isPlatformProject){
-            implementation(core_project)
+            shadow(common_project)
+            compileOnly(common_project)
         }
-        if (project.name.startsWith("coreConfigLoader_")){
-            project("coreConfigLoader").
+        if (isConfigLoaderProject){
+            compileOnly(core_project)
         }
     }
 
 }
 
 enabled_platform_projects.each { project ->
-    def coreJarTask = core_project.tasks.getByName('jar')
-
     project.tasks.getByName('shadowJar') {
-        // 在 :core:jar 后运行
-        mustRunAfter coreJarTask
+        configurations = [project.configurations.shadow]
 
-        // 添加 core
-        from coreJarTask.outputs.files.singleFile
-
-        // 配置shadowJar任务不包含任何依赖
-        configurations = []
-
-        // 文件无额外后缀
         archiveClassifier = ""
     }
 
