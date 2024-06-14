@@ -17,6 +17,12 @@ ext {
 
 println "platform(s) that enabled: " + enabled_platforms
 
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs += ['-Xlint:deprecation']
+    }
+}
+
 subprojects { project ->
     def isPlatformProject = project in enabled_platform_projects
 

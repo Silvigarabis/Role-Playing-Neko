@@ -78,15 +78,15 @@ public class RPlayNekoCore<Sender, Player> {
         Messages.loadMessageConfig(messageConfig);
     }
 
-    public RPlayNekoCore(Platform platform){
+    public RPlayNekoCore(Platform<Sender, Player> platform){
         this.platform = platform;
-        this.messages = new Messages(platform);
+        this.messages = new Messages<>(platform);
         this.reloadConfig();
         INSTANCE = this;
     }
 
     private Platform<Sender, Player> platform;
-    public Platform getPlayform(){
+    public Platform<Sender, Player> getPlatform(){
         return platform;
     }
 
@@ -116,7 +116,7 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     private void registerCommands(){
-        this.platform.registerCommand(new CommandRPlayNeko(this));
+        this.platform.registerCommand(new CommandRPlayNeko<>(this));
     }
 
     public boolean checkPermission(Sender sender, String permission){

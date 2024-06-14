@@ -21,12 +21,9 @@ public abstract class RPlayNekoPlayer<T> {
 
     private RPlayNekoCore<?, T> core;
 
-    private final @NotNull RPlayNekoDataSource dataSource;
+    private RPlayNekoDataSource dataSource = null;
     public RPlayNekoDataSource getDataSource(){
-        if (dataSource == null || dataSource.isClosed()){
-            this.dataSource = core.getDataSource();
-        }
-        return dataSource;
+        return core.getDataSource();
     }
 
     public RPlayNekoPlayer(@NotNull UUID uuid, @NotNull RPlayNekoCore<?, T> core, @NotNull T origin){
@@ -166,7 +163,7 @@ public abstract class RPlayNekoPlayer<T> {
         if (!(o instanceof RPlayNekoPlayer)){
             return false;
         }
-        RPlayNekoPlayer oplayer = (RPlayNekoPlayer)o;
+        RPlayNekoPlayer<?> oplayer = (RPlayNekoPlayer)o;
         return this.uuid.equals(oplayer.uuid) && this.getDataSource().equals(oplayer.getDataSource());
     }
     @Override

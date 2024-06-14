@@ -12,3 +12,7 @@ dependencies {
 
     api "maven.modrinth:ctlibmod:${ctlibmod_version}"
 }
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-Xlint:rawtypes', '-Xlint:deprecation', '-Xlint:unchecked']
+}

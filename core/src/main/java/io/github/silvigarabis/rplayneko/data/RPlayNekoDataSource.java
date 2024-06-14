@@ -10,7 +10,7 @@ public class RPlayNekoDataSource {
 
     private final Map<UUID, RPlayNekoData> dataMap = new ConcurrentHashMap<>();
     private final Map<UUID, RPlayNekoData> dataMapUnmodifiableCopy = Collections.unmodifiableMap(dataMap);
-    private final IDataTarget dataTarget;
+    private IDataTarget dataTarget;
 
     public @UnmodifiableView @NotNull Map<UUID, RPlayNekoData> getDataMap(){
         checkIsClosed();

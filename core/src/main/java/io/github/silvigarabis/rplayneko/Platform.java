@@ -5,7 +5,7 @@ import io.github.silvigarabis.rplayneko.command.Command;
 import io.github.silvigarabis.rplayneko.data.*;
 import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerFactory;
 import java.util.logging.Logger;
-import java.util.UUID;
+import java.util.*;
 import org.jetbrains.annotations.*;
 
 import org.cneko.toneko.common.util.scheduled.ISchedulerPool;
@@ -75,7 +75,7 @@ public interface Platform<Sender, Player> {
 
     // 这些方法在初始化时调用，可能会调用多次
 
-    boolean registerCommand(Command command);
+    boolean registerCommand(Command<Sender, Player> command);
 
     // 这些方法只在数据准备完毕后调用，但是不限时机
 
