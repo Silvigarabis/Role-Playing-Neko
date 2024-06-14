@@ -1,3 +1,20 @@
+repositories {
+    maven {
+        name = "opencollab-repo-release"
+        url = "https://repo.opencollab.dev/maven-releases"
+        content {
+            includeGroup "cn.nukkit"
+        }
+    }
+    maven {
+        name = "opencollab-repo-snapshot"
+        url = "https://repo.opencollab.dev/maven-snapshots"
+        content {
+            includeGroup "cn.nukkit"
+        }
+    }
+}
+
 dependencies {
-    implementation fileTree("libs")
+    compileOnly "cn.nukkit:nukkit:1.0-SNAPSHOT"
 }
