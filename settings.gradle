@@ -17,6 +17,20 @@ buildCache {
 }
 
 include(":core")
+include(":coreConfigLoader")
+
+def core_config_loaders = [
+    "gson",
+    "properties",
+    "snakeYamlV1",
+    "snakeYamlV2"
+]
+
+core_config_loaders.each { loadername ->
+    def name = "coreConfigLoader_" + loadername
+    include(name)
+    project(name).projectDir = file("coreConfigLoader/" + loadername)
+}
 
 def enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
 enabled_platforms.each { platform ->

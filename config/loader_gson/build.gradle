@@ -1,0 +1,4 @@
+dependencies {
+    // https://mvnrepository.com/artifact/org.yaml/snakeyaml
+    compileOnly group: 'org.yaml', name: 'snakeyaml', version: '1.33'
+}
