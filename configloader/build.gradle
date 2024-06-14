@@ -1,15 +1,11 @@
 apply plugin: 'java-library'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-configurations {
-    shadow
-}
-
 dependencies {
     everyprojects.each { project ->
         if (project.name.startsWith("configloader_")){
             shadow project
-            compileOnly project
+            api project
             println "configloader included " + project.name
         }
     }
@@ -26,6 +22,6 @@ shadowJar {
     archiveClassifier = ""
 }
 
-tasks.named("build") {
-    dependsOn("shadowJar")
+tasks.getByName("build") {
+    dependsOn tasks.getByName('shadowJar')
 }

@@ -6,13 +6,19 @@ println "RolePlayingNeko " + version
 
 ext {
     core_project = project(":core")
-    common_project = project(":common")
+    configloader_project = project(":configloader")
 
     enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
-    enabled_platform_projects = enabled_platforms.collect { project(":" + it) }
+    enabled_platform_projects = enabled_platforms.collect { project(":platform_" + it) }
+    platform_types = new HashMap();
 
     ctlibmod_version = properties["ctlibmod_version"]
 
+    everyprojects = allprojects
+}
+
+enabled_platforms.each { platform ->
+    platform_types.put(project(":platform_" + platform), platform);
 }
 
 println "platform(s) that enabled: " + enabled_platforms
@@ -44,7 +50,11 @@ subprojects { project ->
     }
 
     group = properties["maven_group"] as String
-    version = properties["version"] as String + "+" + project.name
+    if (isPlatformProject){
+        version = properties["version"] as String + "+" + platform_types.get(project)
+    } else {
+        version = properties["version"] as String + "+" + project.name
+    }
     description = properties["description"] as String
     archives_base_name = properties["archives_base_name"] as String
 
@@ -52,19 +62,18 @@ subprojects { project ->
         archivesName = archives_base_name
     }
 
-    configurations {
-        shadow
-    }
-
     dependencies {
-        implementation 'org.jetbrains:annotations:24.0.0'
-        implementation 'maven.modrinth:ctlibmod:${ctlibmod_version}'
+        compileOnly 'org.jetbrains:annotations:24.0.0'
+        compileOnly "maven.modrinth:ctlibmod:${ctlibmod_version}"
+
         if (isPlatformProject){
-            shadow(common_project)
-            compileOnly(common_project)
+            implementation(configloader_project)
+            implementation(core_project)
+            shadow(configloader_project)
+            shadow(core_project)
         }
         if (isConfigLoaderProject){
-            compileOnly(core_project)
+            compileOnly(core_project) {}
         }
     }
 
@@ -75,10 +84,12 @@ enabled_platform_projects.each { project ->
         configurations = [project.configurations.shadow]
 
         archiveClassifier = ""
+
+        mustRunAfter ":configloader:shadowJar"
     }
 
-    project.tasks.named('build') {
-        dependsOn project.tasks.named('shadowJar')
+    project.tasks.getByName("build") {
+        dependsOn project.tasks.getByName('shadowJar')
     }
 }
 

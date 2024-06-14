@@ -33,7 +33,7 @@ def enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim
 enabled_platforms.each { platform ->
     def name = ":platform_" + platform
     include(name)
-    project(name).projectDir = file("platform/" + platform)
+    project(name).projectDir = file("platforms/" + platform)
 }
 
 rootProject.name = "role_playing_neko"
