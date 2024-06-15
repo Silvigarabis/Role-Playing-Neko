@@ -5,20 +5,25 @@ plugins {
 println "RolePlayingNeko " + version
 
 ext {
-    core_project = project(":core")
-    configloader_project = project(":configloader")
-
     enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
     enabled_platform_projects = enabled_platforms.collect { project(":platform_" + it) }
-    platform_types = new HashMap();
-
-    ctlibmod_version = properties["ctlibmod_version"]
 
     everyprojects = allprojects
-}
 
-enabled_platforms.each { platform ->
-    platform_types.put(project(":platform_" + platform), platform);
+    enabled_platforms.each { platform_name ->
+        def platform_project = project(":platform_" + platform_name)
+        platform_project.ext.platform_type = platform_name
+    }
+
+    group = properties["maven_group"]
+    description = properties["description"]
+    archives_base_name = properties["archives_base_name"]
+    version = properties["version"]
+    author = properties["author"]
+    website = properties["website"]
+    issues = properties["issues"]
+    authors = properties["authors"] as String
+    contributors = properties["contributors"] as String
 }
 
 println "platform(s) that enabled: " + enabled_platforms
@@ -29,72 +34,63 @@ allprojects {
     }
 }
 
-subprojects { project ->
-    def isPlatformProject = project in enabled_platform_projects
-    def isConfigLoaderProject  = project.name.startsWith("configloader")
-
+subprojects {
     apply plugin: "java"
-    if (isPlatformProject){
-        apply plugin: "com.github.johnrengelman.shadow"
-    }
 
-    repositories {
-        mavenCentral()
-        maven {
-            name = "Modrinth"
-            url = "https://api.modrinth.com/maven"
-            content {
-                includeGroup "maven.modrinth"
-            }
-        }
+    dependencies {
+        compileOnly 'org.jetbrains:annotations:24.0.0'
     }
-
-    group = properties["maven_group"] as String
-    if (isPlatformProject){
-        version = properties["version"] as String + "+" + platform_types.get(project)
-    } else {
-        version = properties["version"] as String + "+" + project.name
-    }
-    description = properties["description"] as String
-    archives_base_name = properties["archives_base_name"] as String
 
     base {
         archivesName = archives_base_name
     }
-
-    dependencies {
-        compileOnly 'org.jetbrains:annotations:24.0.0'
-        compileOnly "maven.modrinth:ctlibmod:${ctlibmod_version}"
-
-        if (isPlatformProject){
-            implementation(configloader_project)
-            implementation(core_project)
-            shadow(configloader_project)
-            shadow(core_project)
-        }
-        if (isConfigLoaderProject){
-            compileOnly(core_project) {}
-        }
-    }
-
 }
 
-enabled_platform_projects.each { project ->
-    project.tasks.getByName('shadowJar') {
-        configurations = [project.configurations.shadow]
-
-        archiveClassifier = ""
-
-        mustRunAfter ":configloader:shadowJar"
+subprojects { platform_project ->
+    if (!(platform_project in enabled_platform_projects)){
+        return;
     }
 
-    project.tasks.getByName("build") {
-        dependsOn project.tasks.getByName('shadowJar')
+    println "configuring platform " + platform_project.ext.platform_type
+
+    apply plugin: "com.github.johnrengelman.shadow"
+
+    version = properties["version"] + "+" + platform_type
+
+    dependencies {
+        implementation(project(":core"))
+        shadow(project(":core"))
+    }
+
+    shadowJar {
+        configurations = [configurations.shadow]
+
+        archiveClassifier = ""
+    }
+
+    processResources {
+        filesMatching(["fabric.mod.json", "plugin.yml"]) {
+            expand([
+                "version": version,
+                "description": description,
+                "author": author,
+                "authors": authors,
+                "contributors": contributors,
+                "website": website,
+                "issues": issues,
+                "project_id": project_id,
+                "project_name": project_name
+            ])
+        }
+    }
+
+    build {
+        dependsOn "shadowJar"
     }
 }
 
 task build(type: Copy) {
-    mustRunAfter( subprojects.collect { it.tasks.named('build') } )
+    dependsOn enabled_platform_projects.collect { it.tasks.named("build") }
 
     def jarTasks = [ "jar", "remapJar", "sourcesJar", "javadocJar" ]
     jarTasks.each { jarTask ->

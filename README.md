@@ -25,19 +25,3 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ```
-
-所有来源自CSneko的toNeko的代码根据GPLv3协议获得许可，有关代码的使用情况，请查看历史提交记录。
-
-## 与toNeko的不同
-
-- 此仓库的历史提交记录已经被清理过以降低仓库占用，清理了以下文件：
-```
-.gradle
-build
-libs
-lib
-run
-target
-```
-
-- 这个程序重新编写了功能实现的代码。

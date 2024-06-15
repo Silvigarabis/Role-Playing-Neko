@@ -17,17 +17,6 @@ buildCache {
 }
 
 include(":core")
-include(":configloader")
-
-def config_loaders = [
-    "snakeYamlV1"
-]
-
-config_loaders.each { loadername ->
-    def name = ":configloader_" + loadername
-    include(name)
-    project(name).projectDir = file("configloader/loader_" + loadername)
-}
 
 def enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
 enabled_platforms.each { platform ->

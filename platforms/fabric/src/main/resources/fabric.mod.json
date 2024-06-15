@@ -1,44 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "role-playing-neko",
+  "id": "${project_id}",
   "version": "${version}",
-  "name": "Neko!",
-  "description": "可爱即是正义!",
-  "authors": [
-    "CrystalNeko"
-  ],
-  "contributors": [
-    "MrHua269/Lora4967"
-  ],
+  "name": "${project_name}",
+  "description": "${description}",
+  "authors": ${authors},
+  "contributors": ${contributors}
   "contact": {
-    "website": "https://github.com/CSNeko/toNeko",
-    "repo": "https://github.com/CSNeko/toNeko",
-    "issues": "https://github.com/CSNeko/toNeko/issues",
-    "homepage": "https://github.com/CSNeko/toNeko"
+    "issues": "${issues}",
+    "homepage": "${website}"
   },
-  "license": "MIT",
+  "license": "${license}",
   "icon": "assets/rplayneko/icon.png",
   "environment": "*",
   "entrypoints": {
-    "fabric-datagen": [
-      "org.cneko.toneko.fabric.datagen.ToNekoDataGenerator"
-    ],
     "client": [
-      "org.cneko.toneko.fabric.client.ToNekoClient"
+      "io.github.silvigarabis.rplayneko.fabric.RPlayNekoFabricClient"
     ],
     "main": [
-      "org.cneko.toneko.fabric.ToNeko"
+      "io.github.silvigarabis.rplayneko.fabric.RPlayNekoFabric"
     ]
   },
   "depends": {
-    "fabricloader": "*",
-    "fabric": "*",
-    "minecraft": ">=1.19",
-    "ctlib": "*",
-    "fabric-permissions-api-v0": "*",
-    "geckolib": "*"
-  },
-    "suggests": {
-    "luckperms": "*"
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "~${minecraft_version}"
   }
 }

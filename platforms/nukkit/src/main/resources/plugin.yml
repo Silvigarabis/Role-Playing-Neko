@@ -1,0 +1,30 @@
+main: io.github.silvigarabis.rplayneko.nukkit.RPlayNekoNukkit
+api: [ '1.0.0' ]
+load: POSTWORLD
+
+name: '${project_id}'
+prefix: '${project_name}'
+version: '${version}'
+description: '${description}'
+
+author: '${author}'
+authors: ${authors}
+contributors: ${contributors}
+website: '${website}'
+
+commands:
+  rplayneko:
+    aliases: [ "neko" ]
+    description: 可以把玩家变成猫娘的命令
+    permission: 'rplayneko.command'
+    usage: '/<command> help'
+
+permissions:
+  "rplayneko.user":
+    description: '允许一系列可以授予普通玩家的命令'
+    default: true
+    children:
+      rplayneko.command: true
+  rplayneko.command:
+    description: 允许执行命令
+    default: true
