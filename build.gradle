@@ -112,9 +112,9 @@ task build {
     dependsOn subprojects.collect { it.tasks.named("build") }
 
     doLast {
-        def jarTasks = [ "jar", "remapJar", "sourcesJar", "remapSourcesJar", "shadowJar"]
+        def jarTasks = [ "jar", "remapJar", "sourcesJar", "remapSourcesJar", "shadowJar" ]
     
-        def outDir = file("out/");
+        def outDir = file("build/libs/");
         outDir.mkdirs();
     
         subprojects.each { project -> jarTasks.each { taskName -> 
@@ -122,14 +122,35 @@ task build {
     
             if (task){
                 def out = task.outputs.files.singleFile
-                //println "will copy from " + out.path
+                //println "(build/libs/) will copy from task " + task + ":" + out.path
                 Files.copy(Paths.get(out.path), Paths.get(outDir.path, out.name), StandardCopyOption.REPLACE_EXISTING);
             }
         }}
         
     }
+
+    doLast {
+        def jarTasks = [ "shadowJar", "jar" ]
+    
+        def outDir = file("out/");
+        outDir.mkdirs();
+    
+        enabled_platform_projects.each { project ->
+            for (def taskName : jarTasks){
+                def task = project.tasks.findByPath(taskName);
+                if (task){
+                    def out = task.outputs.files.singleFile
+                    //println "(out/) will copy from task " + task + ":" + out.path
+                    Files.copy(Paths.get(out.path), Paths.get(outDir.path, out.name), StandardCopyOption.REPLACE_EXISTING);
+                    return;
+                }
+            }
+        }
+        
+    }
 }
 
 task clean(type: Delete){
+    delete "build/"
     delete "out/"
 }
