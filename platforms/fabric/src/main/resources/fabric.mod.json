@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "${project_id}",
+  "version": "${version}",
+  "name": "${project_name}",
+  "description": "${description}",
+  "author": "${author}",
+  "authors": ["Silvigarabis"],
+  "contributors": [],
+  "contact": {
+    "issues": "${issues}",
+    "homepage": "${website}"
+  },
+  "license": "${license}",
+  "icon": "assets/rplayneko/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "io.github.silvigarabis.rplayneko.fabric.RPlayNekoFabricClient"
+    ],
+    "main": [
+      "io.github.silvigarabis.rplayneko.fabric.RPlayNekoFabric"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "~${minecraft_version}"
+  }
+}

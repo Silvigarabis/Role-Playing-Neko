@@ -1,0 +1,86 @@
+# 基于权限给予玩家使用权限，忽略此配置中的设置
+# "enabled", "disabled"
+permission-check-override: enabled
+# 语言
+# 所有位于lang/目录下的json文件的名字都可以写在这里
+# 目前支持：zh_cn
+language: zh_cn
+
+# 发送给玩家的文字的语言，不设置则尝试跟随玩家客户端语言
+# null, 或者language支持的选项
+player-language: null
+
+toneko:
+    # 玩家可以把自己变成猫娘吗？
+    can-self-transform: true
+
+    # 玩家可以把别人变成猫娘吗？
+    can-transform: true
+
+    # 玩家把自己或别人变猫娘之前要确认吗？
+    transform-confirm: true
+    
+    # 玩家把别人变猫娘之前要让受害者确认吗？
+    transform-require-ask: true
+
+neko:
+    # 自己选择变成猫娘后还可以选择变回来吗？
+    self-transform-back-self: true
+
+    # 没有主人的猫娘会自动变回来吗？
+    auto-transform-back-noowner: false
+
+    # 猫娘可以自己变回来吗？
+    transform-back-self: true
+    # 猫娘可以被主人变回来吗？
+    transform-back-owner: true
+    # 猫娘可以被其他人变回来吗？
+    transform-back-other: false
+    # 把猫娘变回来之前要让受害者确认吗？
+    transform-back-require-ask: false
+
+    # 猫娘可以认主人吗？
+    owner-add: true
+    # 猫娘可以不认主人吗？
+    owner-remove: true
+
+    feature-text_replace:
+        allow-change: false
+    feature-chat_nya:
+        allow-change: true
+    feature-chat_owner_call:
+        allow-change: true
+
+nekoowner:
+    multi-owner: false
+    other-owner-add: false
+    other-owner-remove: false
+
+    feature-text_replace:
+        allow-change: true
+    feature-chat_nya:
+        allow-change: false
+    feature-chat_owner_call:
+        allow-change: true
+    feature-neko_chat_mute:
+        allow-change: true
+
+enabled-features:
+- text_replace
+- chat_owner_call
+- model_replace
+- neko_chat_mute
+- chat_nya
+
+allowed-features:
+- text_replace
+- chat_owner_call
+- model_replace
+- neko_chat_mute
+- chat_nya
+
+feature-text_replace:
+feature-chat_nya:
+feature-chat_owner_call:
+feature-model_replace:
+feature-neko_chat_mute:

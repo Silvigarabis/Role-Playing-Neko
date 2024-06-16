@@ -1,0 +1,40 @@
+repositories {
+    maven {
+        name = "SpigotMC"
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
+    }
+    // for Spigot-API's BungeeCord ChatComponent-API
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+
+    // Spigot, With Spigot BuildTool add to .m2
+    // mavenLocal() // This is needed for CraftBukkit and Spigot.
+
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT'
+}
+
+processResources {
+    filesMatching("plugin.yml") {
+        expand([
+            "version": version,
+            "description": description,
+            "author": author,
+            "authors": authors,
+            "contributors": contributors,
+            "website": website,
+            "issues": issues,
+            "license": license,
+            "project_id": project_id,
+            "project_name": project_name
+        ])
+    }
+}
+

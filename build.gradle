@@ -1,0 +1,87 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+}
+
+println "RolePlayingNeko " + version
+
+ext {
+    enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
+    enabled_platform_projects = enabled_platforms.collect { project(":platform_" + it) }
+
+    enabled_platforms.each { platform_name ->
+        def platform_project = project(":platform_" + platform_name)
+        platform_project.ext.platform_type = platform_name
+    }
+
+    group = properties["maven_group"]
+    description = properties["description"]
+    archives_base_name = properties["archives_base_name"]
+    version = properties["version"]
+    author = properties["author"]
+    license = properties["license"]
+    website = properties["website"]
+    issues = properties["issues"]
+    authors = properties["authors"] as String
+    contributors = properties["contributors"] as String
+}
+
+println "platform(s) that enabled: " + enabled_platforms
+
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs += ['-Xlint:deprecation']
+    }
+}
+
+subprojects {
+    apply plugin: "java"
+
+    dependencies {
+        compileOnly 'org.jetbrains:annotations:24.0.0'
+    }
+
+    base {
+        archivesName = archives_base_name
+    }
+}
+
+subprojects {
+    if (!(project in enabled_platform_projects)){
+        return;
+    }
+
+    println "add platform " + platform_type
+
+    apply plugin: "com.github.johnrengelman.shadow"
+
+    version = properties["version"] + "+" + platform_type
+
+    dependencies {
+        implementation(project(":core"))
+        shadow(project(":core"))
+    }
+
+    shadowJar {
+        configurations = [project.configurations.shadow]
+
+        archiveClassifier = ""
+    }
+
+    build {
+        dependsOn "shadowJar"
+    }
+}
+
+task build(type: Copy) {
+    dependsOn enabled_platform_projects.collect { it.tasks.named("build") }
+
+    def jarTasks = [ "jar", "remapJar", "sourcesJar", "javadocJar" ]
+    jarTasks.each { jarTask ->
+        subprojects.each { project ->
+            if (project.tasks.findByPath(jarTask)){
+                from(project.tasks.getByName(jarTask).outputs.files.singleFile)
+            }
+        }
+    }
+    into "$rootDir/out"
+}
