@@ -1,15 +1,8 @@
 package io.github.silvigarabis.rplayneko.data;
 
-import java.util.UUID;
-import java.util.HashMap;
-import java.util.WeakHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import org.jetbrains.annotations.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RPlayNekoData {
     private boolean _dirty = true;
@@ -20,101 +13,207 @@ public class RPlayNekoData {
         _dirty = dirty;
     }
 
-    private @NotNull UUID uuid;
+    private final  @NotNull UUID uuid;
+    private @Nullable UUID castor = null;
+
     private boolean isNeko = false;
     private boolean isMuted = false;
-    private boolean isSelfTransform = false;
     private @Nullable String nyaText = null;
+
+    private final Map<UUID, Integer> experiences = new ConcurrentHashMap<>();
     private final Map<String, String> speakReplaces = new ConcurrentHashMap<>();
+    private final Map<String, String> regexpSpeakReplaces = new ConcurrentHashMap<>();
+    private final Set<String> ownerCalls = ConcurrentHashMap.newKeySet();
     private final Set<String> enabledPowers = ConcurrentHashMap.newKeySet();
-    private @Nullable UUID ownerUUID = null;
-    private @NotNull Set<UUID> multiOwners = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> owners = ConcurrentHashMap.newKeySet();
 
     public RPlayNekoData(UUID uuid){
         this.uuid = uuid;
     }
 
-    public @NotNull UUID getUuid() {
+    public @NotNull UUID getUuid(){
         return uuid;
     }
 
-    public boolean isNeko() {
+    public @Nullable UUID getCastor(){
+        return castor;
+    }
+
+    public void setCastor(@Nullable UUID castor){
+        this.castor = castor;
+        _dirty(true);
+    }
+
+    public boolean isNeko(){
         return isNeko;
     }
 
-    public void setNeko(boolean neko) {
-        _dirty(true);
+    public void setNeko(boolean neko){
         isNeko = neko;
+        _dirty(true);
     }
 
-    public boolean isMuted() {
+    public boolean isMuted(){
         return isMuted;
     }
 
-    public void setMuted(boolean muted) {
-        _dirty(true);
+    public void setMuted(boolean muted){
         isMuted = muted;
-    }
-
-    public boolean isSelfTransform() {
-        return isSelfTransform;
-    }
-
-    public void setSelfTransform(boolean selfTransform) {
         _dirty(true);
-        isSelfTransform = selfTransform;
-    }
+    } 
 
-    public @Nullable String getNyaText() {
+    public @Nullable String getNyaText(){
         return nyaText;
     }
 
-    public void setNyaText(@Nullable String nyaText) {
-        _dirty(true);
+    public void setNyaText(@Nullable String nyaText){
         this.nyaText = nyaText;
-    }
-
-    public @NotNull Map<String, String> getSpeakReplaces() {
-        return speakReplaces;
-    }
-
-    public void setSpeakReplaces(@NotNull Map<String, String> speakReplaces) {
         _dirty(true);
-        this.speakReplaces.clear();
-        for (Map.Entry<String, String> entry : speakReplaces.entrySet()){
-            this.speakReplaces.put(entry.getKey(), entry.getValue());
+    }
+
+    public @UnmodifiableView Map<UUID, Integer> getExperiences(){
+        return Collections.unmodifiableMap(experiences);
+    }
+    public int getExperience(@NotNull UUID player, int xp){
+        if (experiences.containsKey(player)){
+            return experiences.get(player);
+        }
+        throw IllegalArgumentException("no xp record found");
+    }
+    public boolean setExperience(@NotNull UUID player, int xp){
+        experiences.put(player, xp);
+        _dirty(true);
+    }
+    public boolean deleteExperience(@NotNull UUID player){
+        experiences.remove(player);
+        _dirty(true);
+    }
+
+    public @UnmodifiableView Map<String, String> getRegexpSpeakReplaces(){
+        return Collections.unmodifiableMap(regexpSpeakReplaces);
+    }
+
+    public void addRegexpSpeakReplace(@NotNull String pattern, @NotNull String replacement){
+        regexpSpeakReplaces.put(pattern, replacement);
+        _dirty(true);
+    }
+
+    public boolean removeRegexpSpeakReplace(@NotNull String pattern){
+        boolean result = regexpSpeakReplaces.remove(pattern);
+        if (result){
+            _dirty(true);
         }
     }
 
-    public @NotNull Set<String> getEnabledPowers() {
-        return enabledPowers;
+    public @UnmodifiableView Map<String, String> getSpeakReplaces(){
+        return Collections.unmodifiableMap(speakReplaces);
     }
 
-    public void setEnabledPowers(@NotNull Collection<String> enabledPowers) {
+    public void addSpeakReplace(@NotNull String pattern, @NotNull String replacement){
+        speakReplaces.put(pattern, replacement);
         _dirty(true);
-        this.enabledPowers.clear();
-        for (String power : enabledPowers){
-            this.enabledPowers.add(power);
+    }
+
+    public boolean removeSpeakReplace(@NotNull String pattern){
+        boolean result = speakReplaces.remove(pattern);
+        if (result){
+            _dirty(true);
         }
     }
 
-    public @Nullable UUID getOwnerUUID() {
-        return ownerUUID;
+    public @UnmodifiableView Set<String> getOwnerCalls(){
+        return Collections.unmodifiableSet(ownerCalls);
     }
 
-    public void setOwnerUUID(@Nullable UUID ownerUUID) {
-        _dirty(true);
-        this.ownerUUID = ownerUUID;
+    public boolean addOwnerCall(@NotNull String call){
+        boolean result = ownerCalls.add(call);
+        if (result){
+            _dirty(true);
+        }
+        return result;
     }
 
-    public @NotNull Set<UUID> getMultiOwners(){
-        return multiOwners;
+    public boolean removeOwnerCall(@NotNull String call){
+        boolean result = ownerCalls.remove(call);
+        if (result){
+            _dirty(true);
+        }
+        return result;
     }
-    public void setMultiOwners(@NotNull Collection<UUID> multiOwners){
-        _dirty(true);
-        this.multiOwners.clear();
-        for (UUID power : multiOwners){
-            this.multiOwners.add(power);
+
+    public @UnmodifiableView Set<RPlayNekoPowerType> getEnabledPowers(){
+        return Collections.unmodifiableSet(enabledPowers);
+    }
+
+    public boolean addEnabledPower(@NotNull RPlayNekoPowerType power){
+        boolean result = enabledPowers.add(power);
+        if (result){
+            _dirty(true);
+        }
+        return result;
+    }
+
+    public boolean removeEnabledPower(@NotNull RPlayNekoPowerType power){
+        boolean result = enabledPowers.remove(power);
+        if (result){
+            _dirty(true);
+        }
+        return result;
+    }
+
+    public List<UUID> getOwners(){
+        synchronized(owners){
+            return new ArrayList<>(owners);
         }
     }
+
+    public @Nullable getOwner(){
+        synchronized(owners){
+            if (owners.size() > 0){
+                return owners.get(0);
+            }
+        }
+        return null;
+    }
+
+    public boolean setOwner(@NotNull UUID owner){
+        boolean result;
+        synchronized(owners){
+            if (owners.contains(owner)){
+                owners.remove(owner);
+            }
+            result = owners.add(0, owner);
+        }
+        if (result){
+            _dirty(true);
+        }
+        return result;
+    }
+
+    public boolean addOwner(@NotNull UUID owner){
+        boolean result;
+        synchronized(owners){
+            if (owners.contains(owner)){
+                result = false;
+            } else {
+                result = owners.add(owner);
+            }
+        }
+        if (result){
+            _dirty(true);
+        }
+        return result;
+    }
+
+    public boolean removeOwner(@NotNull UUID owner){
+        boolean result;
+        synchronized(owners){
+            result = owners.remove(owner);
+        }
+        if (result){
+            _dirty(true);
+        }
+        return result;
+    }
+
 }

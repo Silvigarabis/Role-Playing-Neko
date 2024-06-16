@@ -9,12 +9,21 @@ import io.github.silvigarabis.rplayneko.storage.IDataTarget;
 public class RPlayNekoDataSource {
 
     private final Map<UUID, RPlayNekoData> dataMap = new ConcurrentHashMap<>();
-    private final Map<UUID, RPlayNekoData> dataMapUnmodifiableCopy = Collections.unmodifiableMap(dataMap);
     private IDataTarget dataTarget;
+
+    private boolean isClosed = false;
+    public boolean isClosed(){
+        return isClosed;
+    }
+    public void checkIsClosed(){
+        if (this.isClosed){
+            throw new IllegalStateException("dataSource already closed!");
+        }
+    }
 
     public @UnmodifiableView @NotNull Map<UUID, RPlayNekoData> getDataMap(){
         checkIsClosed();
-        return dataMapUnmodifiableCopy;
+        return Collections.unmodifiableMap(dataMap);
     }
 
     public RPlayNekoDataSource(IDataTarget dataTarget){
@@ -197,10 +206,6 @@ public class RPlayNekoDataSource {
         }
         return true;
     }
-    private boolean isClosed = false;
-    public boolean isClosed(){
-        return isClosed;
-    }
     /**
      * 关闭此数据源，不会写入数据到dataTarget
      */
@@ -213,11 +218,6 @@ public class RPlayNekoDataSource {
             return true;
         } else {
             return false;
-        }
-    }
-    public void checkIsClosed(){
-        if (this.isClosed){
-            throw new IllegalStateException("dataSource already closed!");
         }
     }
 }
