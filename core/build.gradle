@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.yaml:snakeyaml:2.2'
+        classpath 'com.google.code.gson:gson:2.11.0'
+    }
+}
+
 plugins {
     id 'java-library'
 }
@@ -19,4 +29,30 @@ dependencies {
 
 tasks.withType(JavaCompile) {
     options.compilerArgs += ['-Xlint:rawtypes', '-Xlint:deprecation', '-Xlint:unchecked']
+}
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.nio.file.Paths
+import org.yaml.snakeyaml.Yaml
+
+processResources {
+    def Yaml = new Yaml()
+    def gson = new GsonBuilder()
+        .disableHtmlEscaping()
+        .create()
+
+    filesMatching("assets/${project_id}/lang/*.yml") {
+        def destJsonFilePath = it.getPath().replaceAll("\\.yml\$", ".json")
+        def destJsonFile = new File(destinationDir, destJsonFilePath)
+
+        println "converting " + it.getPath() + " to " + destJsonFilePath
+
+        def yamlContent = Yaml.load(it.open())
+        def jsonContent = gson.toJson(yamlContent)
+        
+        destJsonFile.getParentFile().mkdirs()
+        destJsonFile.text = jsonContent
+    }
+
 }

@@ -2,9 +2,7 @@ plugins {
     id 'fabric-loom' version '1.6.12'
 }
 
-ext {
-    version = version + minecraft_version
-}
+version = version + properties["minecraft_version"]
 
 repositories {
     mavenCentral()
@@ -20,21 +18,26 @@ dependencies {
 processResources {
     filesMatching("fabric.mod.json") {
         expand([
-            "version": version,
-            "description": description,
-            "author": author,
-            "authors": authors,
-            "contributors": contributors,
-            "website": website,
-            "issues": issues,
-            "license": license,
-            "project_id": project_id,
-            "project_name": project_name,
+            "version": project.version,
+            "project_id": project.project_id,
+            "project_name": project.project_name,
 
-            "loader_version": loader_version,
-            "minecraft_version": minecraft_version
+            "description": rootProject.ext.description,
+            "author": rootProject.ext.author,
+            "authors": rootProject.ext.authors,
+            "contributors": rootProject.ext.contributors,
+            "website": rootProject.ext.website,
+            "issues": rootProject.ext.issues,
+            "license": rootProject.ext.license,
+
+            "loader_version": project.loader_version,
+            "minecraft_version": project.minecraft_version
         ])
     }
+}
+
+def encodeToUnicode(String str) {
+    return str.collect { it -> it > 255 ? "\\u${String.format('%04x', (int)it)}" : it }.join()
 }
 
 tasks.withType(JavaCompile).configureEach {

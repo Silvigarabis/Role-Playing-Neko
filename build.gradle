@@ -4,6 +4,10 @@ plugins {
 
 println "RolePlayingNeko " + version
 
+import java.util.Properties;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
 ext {
     enabled_platforms = getProperty("platforms").tokenize(',').collect { it.trim() }
     enabled_platform_projects = enabled_platforms.collect { project(":platform_" + it) }
@@ -13,16 +17,22 @@ ext {
         platform_project.ext.platform_type = platform_name
     }
 
+    Properties infoProperties = new Properties();
+    infoProperties.load(new InputStreamReader(new FileInputStream(file("info.properties")), StandardCharsets.UTF_8));
+
     group = properties["maven_group"]
-    description = properties["description"]
     archives_base_name = properties["archives_base_name"]
     version = properties["version"]
-    author = properties["author"]
-    license = properties["license"]
-    website = properties["website"]
-    issues = properties["issues"]
-    authors = properties["authors"] as String
-    contributors = properties["contributors"] as String
+
+    description = infoProperties.get("description") as String
+    author = infoProperties.get("author") as String
+    license = infoProperties.get("license") as String
+    website = infoProperties.get("website") as String
+    issues = infoProperties.get("issues") as String
+    authors = infoProperties.get("authors") as String
+    contributors = infoProperties.get("contributors") as String
+    
+    println description
 }
 
 println "platform(s) that enabled: " + enabled_platforms
@@ -34,6 +44,12 @@ allprojects {
 }
 
 subprojects {
+    if (project in enabled_platform_projects){
+        version = version + "+" + project.platform_type
+    } else {
+        version = version + "+" + project.name
+    }
+
     apply plugin: "java"
 
     dependencies {
@@ -50,11 +66,7 @@ subprojects {
         return;
     }
 
-    println "add platform " + platform_type
-
     apply plugin: "com.github.johnrengelman.shadow"
-
-    version = properties["version"] + "+" + platform_type
 
     dependencies {
         implementation(project(":core"))
@@ -72,16 +84,52 @@ subprojects {
     }
 }
 
+/*
 task build(type: Copy) {
-    dependsOn enabled_platform_projects.collect { it.tasks.named("build") }
 
-    def jarTasks = [ "jar", "remapJar", "sourcesJar", "javadocJar" ]
-    jarTasks.each { jarTask ->
-        subprojects.each { project ->
-            if (project.tasks.findByPath(jarTask)){
-                from(project.tasks.getByName(jarTask).outputs.files.singleFile)
-            }
+    dependsOn subprojects.collect { it.tasks.named("build") }
+
+    def jarTasks = [ "jar", "remapJar", "sourcesJar", "remapSourcesJar", "shadowJar"]
+
+    subprojects.each { project -> jarTasks.each { taskName -> 
+        def task = project.tasks.findByPath(taskName);
+        if (task){
+            def out = task.outputs.files
+            println "will copy from " + out
+            from(out)
         }
-    }
+    }}
+
     into "$rootDir/out"
+}
+*/
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
+task build {
+    dependsOn subprojects.collect { it.tasks.named("build") }
+
+    doLast {
+        def jarTasks = [ "jar", "remapJar", "sourcesJar", "remapSourcesJar", "shadowJar"]
+    
+        def outDir = file("out/");
+        outDir.mkdirs();
+    
+        subprojects.each { project -> jarTasks.each { taskName -> 
+            def task = project.tasks.findByPath(taskName);
+    
+            if (task){
+                def out = task.outputs.files.singleFile
+                //println "will copy from " + out.path
+                Files.copy(Paths.get(out.path), Paths.get(outDir.path, out.name), StandardCopyOption.REPLACE_EXISTING);
+            }
+        }}
+        
+    }
+}
+
+task clean(type: Delete){
+    delete "out/"
 }
