@@ -1,22 +1,19 @@
-package io.github.silvigarabis.rplayneko.power;
+package io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
 
-import java.util.*;
-import io.github.silvigarabis.rplayneko.data.*;
-
-public enum RPlayNekoPowerType {
-    NIGHT_VISION("NIGHT_VISION"), JUMP_BOOST("JUMP_BOOST");
-
-    private RPlayNekoPowerType(String name){
+public class RPlayNekoPowerType {
+    private final String name;
+    public String getName(){
+        return name;
+    }
+    public RPlayNekoPowerType(String name){
         this.name = name;
     }
-    public final String name;
-    
-    public static final Map<String, RPlayNekoPowerType> Powers;
-    static {
-        Map<String, RPlayNekoPowerType> map = new HashMap<>();
-        for (var power : RPlayNekoPowerType.values()){
-            map.put(power.name, power);
-        }
-        Powers = Collections.unmodifiableMap(map);
+    @Override
+    public boolean equals(Object o){
+        return o instanceof RPlayNekoPowerType && o.getName().equals(this.getName());
+    }
+    @Override
+    public int hashCode(){
+        return this.getName().hashCode() * 31;
     }
 }

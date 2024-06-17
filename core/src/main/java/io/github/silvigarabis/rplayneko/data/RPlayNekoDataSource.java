@@ -1,6 +1,7 @@
 package io.github.silvigarabis.rplayneko.data;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.*;
 
@@ -20,102 +21,23 @@ public class RPlayNekoDataSource {
             throw new IllegalStateException("dataSource already closed!");
         }
     }
-
-    public @UnmodifiableView @NotNull Map<UUID, RPlayNekoData> getDataMap(){
-        checkIsClosed();
-        return Collections.unmodifiableMap(dataMap);
+    /**
+     * 关闭此数据源，不会写出数据到dataTarget
+     */
+    public boolean close(){
+        if (!this.isClosed){
+            this.dataMap.clear();
+            this.isClosed = true;
+            this.dataTarget.close();
+            this.dataTarget = null;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public RPlayNekoDataSource(IDataTarget dataTarget){
         this.dataTarget = dataTarget;
-    }
-
-    public boolean addNeko(@NotNull UUID uuid, @Nullable UUID owner){
-        if (this.isNeko(uuid)){
-            return false;
-        }
-        setNeko(uuid, true);
-        setOwner(uuid, owner);
-        return true;
-    }
-    public boolean removeNeko(@NotNull UUID uuid){
-        if (!this.isNeko(uuid)){
-            return false;
-        }
-        setNeko(uuid, false);
-
-        // clean data
-        setOwner(uuid, null);
-        setMuted(uuid, false);
-        setNya(uuid, null);
-        cleanSpeakReplace(uuid);
-        return true;
-    }
-
-    public void setNeko(@NotNull UUID uuid, boolean enabled){
-        getData(uuid).setNeko(enabled);
-    }
-    public boolean isNeko(@NotNull UUID uuid){
-        return getData(uuid).isNeko();
-    }
-
-    public void setSelfTransform(@NotNull UUID uuid, boolean mode){
-        getData(uuid).setSelfTransform(mode);
-    }
-    public boolean isSelfTransform(@NotNull UUID uuid){
-        return getData(uuid).isSelfTransform();
-    }
-
-    public void setOwner(@NotNull UUID uuid, @Nullable UUID ownerUUID){
-        getData(uuid).setOwnerUUID(ownerUUID);
-    }
-    public @Nullable UUID getOwner(@NotNull UUID uuid){
-        return getData(uuid).getOwnerUUID();
-    }
-    public Set<UUID> getMultiOwners(@NotNull UUID uuid){
-        return getData(uuid).getMultiOwners();
-    }
-
-    public void setMuted(@NotNull UUID uuid, boolean muted){
-        getData(uuid).setMuted(muted);
-    }
-    public boolean isMuted(@NotNull UUID uuid){
-        return getData(uuid).isMuted();
-    }
-
-    public void setNya(@NotNull UUID uuid, @Nullable String nyaText){
-        getData(uuid).setNyaText(nyaText);
-    }
-    public @Nullable String getNya(@NotNull UUID uuid){
-        return getData(uuid).getNyaText();
-    }
-
-    public boolean addSpeakReplace(@NotNull UUID uuid, @NotNull String pattern, @NotNull String replacement){
-        Map<String, String> map = getSpeakReplaces(uuid);
-        if (map.containsKey(pattern)){
-            return false;
-        }
-        map.put(pattern, replacement);
-        markDirty(uuid);
-        return true;
-    }
-    public boolean removeSpeakReplace(@NotNull UUID uuid, @NotNull String pattern){
-        boolean result = getSpeakReplaces(uuid).containsKey(pattern);
-        if (result){
-            getSpeakReplaces(uuid).remove(pattern);
-            markDirty(uuid);
-        }
-        return result;
-    }
-    public void cleanSpeakReplace(@NotNull UUID uuid){
-        getSpeakReplaces(uuid).clear();
-    }
-    public @NotNull Map<String, String> getSpeakReplaces(@NotNull UUID uuid){
-        return getData(uuid).getSpeakReplaces();
-    }
-
-    public Set<String> getEnabledPowers(UUID uuid){
-        return getData(uuid).getEnabledPowers();
     }
 
     public void markDirty(UUID uuid){
@@ -131,6 +53,12 @@ public class RPlayNekoDataSource {
         dataMap.put(uuid, data);
         return data;
     }
+
+    public void removeAllData(){
+        checkIsClosed();
+        dataMap.clear();
+    }
+
     public boolean removeData(@NotNull UUID uuid, boolean inDisk){
         checkIsClosed();
         if (inDisk){
@@ -142,10 +70,7 @@ public class RPlayNekoDataSource {
         }
         return result;
     }
-    public boolean removeData(@NotNull UUID uuid){
-        checkIsClosed();
-        return removeData(uuid, false);
-    }
+
     public @NotNull RPlayNekoData getData(@NotNull UUID uuid){
         checkIsClosed();
         if (!dataMap.containsKey(uuid)){
@@ -153,10 +78,7 @@ public class RPlayNekoDataSource {
         }
         return dataMap.get(uuid);
     }
-    public boolean hasData(UUID uuid){
-        checkIsClosed();
-        return dataMap.containsKey(uuid);
-    }
+
     public boolean saveData(UUID uuid){
         checkIsClosed();
         if (!hasData(uuid)){
@@ -165,6 +87,33 @@ public class RPlayNekoDataSource {
         var data = getData(uuid);
         return dataTarget.saveToDisk(uuid, data);
     }
+    public int saveDataIf(Predicate<RPlayNekoData> p){
+        checkIsClosed();
+        List<RPlayNekoData> listDataToSave = new LinkedList<>();
+
+        for (var data : data.valueSet()){
+            if (p.test(data)){
+                listDataToSave.add(data);
+            }
+        }
+
+        for (var data : listDataToSave){
+            dataTarget.saveToDisk(data.getUuid(), data);
+        }
+
+        return listDataToUnload.size();
+    }
+
+    public boolean removeData(@NotNull UUID uuid){
+        checkIsClosed();
+        return removeData(uuid, false);
+    }
+
+    public boolean hasData(UUID uuid){
+        checkIsClosed();
+        return dataMap.containsKey(uuid);
+    }
+
     public boolean unloadData(UUID uuid){
         checkIsClosed();
         if (!dataMap.containsKey(uuid)){
@@ -173,6 +122,25 @@ public class RPlayNekoDataSource {
         var data = getData(uuid);
         return dataTarget.saveToDisk(uuid, data);
     }
+
+    public int unloadDataIf(Predicate<RPlayNekoData> p){
+        checkIsClosed();
+        List<RPlayNekoData> listDataToUnload = new LinkedList<>();
+
+        for (var data : data.valueSet()){
+            if (p.test(data)){
+                listDataToUnload.add(data);
+            }
+        }
+
+        for (var data : listDataToUnload){
+            dataTarget.saveToDisk(data.getUuid(), data);
+            removeData(data.getUuid());
+        }
+
+        return listDataToUnload.size();
+    }
+
     public boolean loadData(UUID uuid){
         checkIsClosed();
         if (dataMap.containsKey(uuid)){
@@ -185,6 +153,10 @@ public class RPlayNekoDataSource {
         }
         return result;
     }
+
+    /**
+     * 尝试从内存加载，若不存在则从dataTarget加载，仍然不存在时创建新的数据。
+     */
     public RPlayNekoData fetchData(UUID uuid){
         checkIsClosed();
         if (hasData(uuid)){
@@ -195,6 +167,7 @@ public class RPlayNekoDataSource {
         }
         return createData(uuid);
     }
+
     /**
      * 保存所有数据到dataTarget，并清空数据源
      */
@@ -206,18 +179,19 @@ public class RPlayNekoDataSource {
         }
         return true;
     }
+
     /**
-     * 关闭此数据源，不会写入数据到dataTarget
+     * 保存所有数据到dataTarget
      */
-    public boolean close(){
-        if (!this.isClosed){
-            this.dataMap.clear();
-            this.isClosed = true;
-            this.dataTarget.close();
-            this.dataTarget = null;
-            return true;
-        } else {
-            return false;
+    public boolean saveAllData(){
+        checkIsClosed();
+        for (Map.Entry<UUID, RPlayNekoData> entry : dataMap.entrySet()){
+            UUID uuid = entry.getKey();
+            RPlayNeKoData data = entry.getValue();
+            if (data._dirty()){
+                dataTarget.saveToDisk(uuid, data);
+            }
         }
+        return true;
     }
 }

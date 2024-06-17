@@ -6,13 +6,14 @@ import java.util.UUID;
 
 public enum PlatformType {
     // 写这么多干嘛
-    BUKKIT,
-    NUKKIT,
-    PAPER,
-    FOLIA,
-    PURPUR,
-    SPIGOT,
-    VELOCITY,
-    FABRIC,
-    FORGE
+    Bukkit,
+    Nukkit,
+    Paper,
+    Folia,
+    Purpur,
+    Spigot,
+    Velocity,
+    Fabric,
+    Forge,
+    NeoForge
 }

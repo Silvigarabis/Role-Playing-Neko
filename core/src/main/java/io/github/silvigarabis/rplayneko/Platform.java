@@ -61,7 +61,7 @@ public interface Platform<Sender, Player> {
         return this;
     }
 
-    void saveCoreConfig(RPlayNekoConfig coreConfig);
+    //void saveCoreConfig(RPlayNekoConfig coreConfig);
 
     // 这些方法可能在重载时调用，得到的结果会被缓存或者持续使用，直到下一次重载
 
@@ -73,7 +73,7 @@ public interface Platform<Sender, Player> {
 
     // 这些方法在初始化时调用，可能会调用多次
 
-    boolean registerCommand(Command<Sender, Player> command);
+    //boolean registerCommand(Command<Sender, Player> command);
 
     // 这些方法只在数据准备完毕后调用，但是不限时机
 
@@ -85,7 +85,5 @@ public interface Platform<Sender, Player> {
 
     boolean checkPermission(Sender sender, String permission);
 
-    RPlayNekoPowerFactory<Player> getPowerFactory();
-
-    @NotNull RPlayNekoPlayer<Player> newRPlayNekoPlayer(UUID uuid, RPlayNekoCore<Sender, Player> core, Player player);
+    RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type);
 }

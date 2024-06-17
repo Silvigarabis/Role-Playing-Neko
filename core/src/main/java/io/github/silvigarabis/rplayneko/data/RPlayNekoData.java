@@ -1,16 +1,23 @@
 package io.github.silvigarabis.rplayneko.data;
 
+import io.github.silvigarabis.rplayneko.api.RPlayNekoPowerType;
+
 import java.util.*;
 import org.jetbrains.annotations.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RPlayNekoData {
-    private boolean _dirty = true;
+    private boolean dirty = true;
+    @ApiStatus.Internal
     public boolean _dirty(){
         return _dirty;
     }
+    @ApiStatus.Internal
     public void _dirty(boolean dirty){
         _dirty = dirty;
+    }
+    public void markDirty(){
+        _dirty(true);
     }
 
     private final  @NotNull UUID uuid;
@@ -24,7 +31,7 @@ public class RPlayNekoData {
     private final Map<String, String> speakReplaces = new ConcurrentHashMap<>();
     private final Map<String, String> regexpSpeakReplaces = new ConcurrentHashMap<>();
     private final Set<String> ownerCalls = ConcurrentHashMap.newKeySet();
-    private final Set<String> enabledPowers = ConcurrentHashMap.newKeySet();
+    private final Set<RPlayNekoPowerType> enabledPowers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> owners = ConcurrentHashMap.newKeySet();
 
     public RPlayNekoData(UUID uuid){
@@ -41,7 +48,7 @@ public class RPlayNekoData {
 
     public void setCastor(@Nullable UUID castor){
         this.castor = castor;
-        _dirty(true);
+        markDirty();
     }
 
     public boolean isNeko(){
@@ -50,7 +57,7 @@ public class RPlayNekoData {
 
     public void setNeko(boolean neko){
         isNeko = neko;
-        _dirty(true);
+        markDirty();
     }
 
     public boolean isMuted(){
@@ -59,7 +66,7 @@ public class RPlayNekoData {
 
     public void setMuted(boolean muted){
         isMuted = muted;
-        _dirty(true);
+        markDirty();
     } 
 
     public @Nullable String getNyaText(){
@@ -68,11 +75,11 @@ public class RPlayNekoData {
 
     public void setNyaText(@Nullable String nyaText){
         this.nyaText = nyaText;
-        _dirty(true);
+        markDirty();
     }
 
-    public @UnmodifiableView Map<UUID, Integer> getExperiences(){
-        return Collections.unmodifiableMap(experiences);
+    public Map<UUID, Integer> getExperiences(){
+        return experiences;
     }
     public int getExperience(@NotNull UUID player, int xp){
         if (experiences.containsKey(player)){
@@ -82,53 +89,53 @@ public class RPlayNekoData {
     }
     public boolean setExperience(@NotNull UUID player, int xp){
         experiences.put(player, xp);
-        _dirty(true);
+        markDirty();
     }
     public boolean deleteExperience(@NotNull UUID player){
         experiences.remove(player);
-        _dirty(true);
+        markDirty();
     }
 
-    public @UnmodifiableView Map<String, String> getRegexpSpeakReplaces(){
-        return Collections.unmodifiableMap(regexpSpeakReplaces);
+    public Map<String, String> getRegexpSpeakReplaces(){
+        return regexpSpeakReplaces;
     }
 
     public void addRegexpSpeakReplace(@NotNull String pattern, @NotNull String replacement){
         regexpSpeakReplaces.put(pattern, replacement);
-        _dirty(true);
+        markDirty();
     }
 
     public boolean removeRegexpSpeakReplace(@NotNull String pattern){
         boolean result = regexpSpeakReplaces.remove(pattern);
         if (result){
-            _dirty(true);
+            markDirty();
         }
     }
 
-    public @UnmodifiableView Map<String, String> getSpeakReplaces(){
-        return Collections.unmodifiableMap(speakReplaces);
+    public Map<String, String> getSpeakReplaces(){
+        return speakReplaces;
     }
 
     public void addSpeakReplace(@NotNull String pattern, @NotNull String replacement){
         speakReplaces.put(pattern, replacement);
-        _dirty(true);
+        markDirty();
     }
 
     public boolean removeSpeakReplace(@NotNull String pattern){
         boolean result = speakReplaces.remove(pattern);
         if (result){
-            _dirty(true);
+            markDirty();
         }
     }
 
-    public @UnmodifiableView Set<String> getOwnerCalls(){
-        return Collections.unmodifiableSet(ownerCalls);
+    public Set<String> getOwnerCalls(){
+        return ownerCalls;
     }
 
     public boolean addOwnerCall(@NotNull String call){
         boolean result = ownerCalls.add(call);
         if (result){
-            _dirty(true);
+            markDirty();
         }
         return result;
     }
@@ -136,19 +143,19 @@ public class RPlayNekoData {
     public boolean removeOwnerCall(@NotNull String call){
         boolean result = ownerCalls.remove(call);
         if (result){
-            _dirty(true);
+            markDirty();
         }
         return result;
     }
 
-    public @UnmodifiableView Set<RPlayNekoPowerType> getEnabledPowers(){
-        return Collections.unmodifiableSet(enabledPowers);
+    public Set<RPlayNekoPowerType> getEnabledPowers(){
+        return enabledPowers;
     }
 
     public boolean addEnabledPower(@NotNull RPlayNekoPowerType power){
         boolean result = enabledPowers.add(power);
         if (result){
-            _dirty(true);
+            markDirty();
         }
         return result;
     }
@@ -156,14 +163,25 @@ public class RPlayNekoData {
     public boolean removeEnabledPower(@NotNull RPlayNekoPowerType power){
         boolean result = enabledPowers.remove(power);
         if (result){
-            _dirty(true);
+            markDirty();
         }
         return result;
     }
 
     public List<UUID> getOwners(){
-        synchronized(owners){
-            return new ArrayList<>(owners);
+        synchronized(this.owners){
+            return new ArrayList<>(this.owners);
+        }
+    }
+
+    public void setOwners(@Nullable List<UUID> owners){
+        synchronized(this.owners){
+            this.owners.clear();
+
+            if (owners != null)
+            for (var p : owners){
+                this.owners.add(p);
+            }
         }
     }
 
@@ -185,7 +203,7 @@ public class RPlayNekoData {
             result = owners.add(0, owner);
         }
         if (result){
-            _dirty(true);
+            markDirty();
         }
         return result;
     }
@@ -200,7 +218,7 @@ public class RPlayNekoData {
             }
         }
         if (result){
-            _dirty(true);
+            markDirty();
         }
         return result;
     }
@@ -211,7 +229,7 @@ public class RPlayNekoData {
             result = owners.remove(owner);
         }
         if (result){
-            _dirty(true);
+            markDirty();
         }
         return result;
     }

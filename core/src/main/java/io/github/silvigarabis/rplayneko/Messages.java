@@ -1,18 +1,17 @@
 package io.github.silvigarabis.rplayneko;
 
-import java.io.File;
-import java.util.Map;
+import java.util.Collections;
 import java.util.EnumMap;
-
-import java.util.logging.Logger;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
  * 和插件聊天消息发送有关的类。
- *
- * TODO: 统一命名
  */
 public class Messages<Sender, Player> {
     public enum MessageKey {
@@ -42,248 +41,249 @@ public class Messages<Sender, Player> {
         NEKO_CHAT_MUTED("neko-chat-muted"),
         NEKO_CHAT_PREFIX("neko-chat-prefix"),
 
-        CHAT_PREFIX("chat-prefix", "[RPlay@Neko]"),
+        CHAT_PREFIX("chat-prefix", "[RPlayNeko]"),
         LOGGER_NAME("logger-name", "RPlayNeko");
 
-        private String messageKey = null;
-        public String getMessageKey(){
-            return messageKey;
+        private final String key;
+        public String getKey(){
+            return key;
         }
-        private String defaultString;
-        public String getDefaultString(){
-            return defaultString;
+        private final String defaultText;
+        public String getDefaultText(){
+            return defaultText;
         }
         private MessageKey(String messageKey){
             this.messageKey = messageKey;
+            this.defaultString = null;
         }
-        private MessageKey(String messageKey, String defaultString){
+        private MessageKey(String messageKey, String defaultText){
             this.messageKey = messageKey;
-            this.defaultString = defaultString;
+            this.defaultText = defaultText;
         }
-        public String getMessageString(){
-            return Messages.getMessageString(this);
+
+        public static final Map<MessageKey, String> Keys;
+        static {
+            Map<MessageKey, String> m = new EnumMap<>(MessageKey.class);
+            for (MessageKey messageKey : MessageKey.values()){
+                m.put(messageKey, messageKey.getKey());
+            }
+            Keys = Collections.unmodifiableMap(m);
         }
     }
 
-    private static String DEFAULT_LOGGER_NAME = "RPlayNeko";
-    private static Map<MessageKey, String> messages = new EnumMap<MessageKey, String>(MessageKey.class);
+    private static Map<MessageKey, String> messages = new EnumMap<>(MessageKey.class);
+
     public static List<MessageKey> getMissingMessageKeys(){
-        List<MessageKey> missingKeys = new ArrayList<>();
-        for (MessageKey key : MessageKey.values()){
-            if (!messages.containsKey(key)){
-                missingKeys.add(key);
+        List<MessageKey> missingMessageKeys = new ArrayList<>();
+        for (MessageKey messageKey : MessageKey.Keys.keySet()){
+            if (!messages.containsKey(messageKey)){
+                missingMessageKeys.add(messageKey);
             }
         }
-        return missingKeys;
+        return missingMessageKeys;
     }
     public static void cleanMessageConfig(){
         messages.clear();
     }
+
     public static void loadMessageConfig(Map<String, String> messageConfig){
-        for (Object messageKeyObject : MessageKey.values()){
-            MessageKey messageKey = (MessageKey) messageKeyObject;
-
-            String key = messageKey.getMessageKey();
-
-            String messageString = messageConfig.get(key);
-            if (messageString == null){
-                continue;
+        for (MessageKey messageKey : MessageKey.Keys.keySet()){
+            String key = messageKey.getKey();
+            String messageText = messageConfig.get(key);
+            if (messageString != null){
+                messages.put(messageKey, messageText);
             }
-            messages.put(messageKey, messageString);
         }
     }
 
-    public static String getMessageString(MessageKey messageKey, boolean translateColorCode){
-        var string = messages.get(messageKey);
-        if (string == null){
-            string = messageKey.getDefaultString();
+    public static String getMessageText(MessageKey messageKey, boolean translateColorCode){
+        String text = messages.get(messageKey);
+        if (text == null){
+            text = messageKey.getDefaultString();
         }
 
-        if (string == null){
-            string = messageKey.getMessageKey();
+        if (text == null){
+            text = messageKey.getKey();
         } else if (translateColorCode){
-            string = string.replaceAll("&([0-9a-fmnol])", "§$1");
-            string = string.replaceAll("&&", "&");
+            text = text.replaceAll("&([0-9a-fmnol])", "§$1")
+            text = text.replaceAll("&&", "&");
         }
         return string;
     }
-    public static String getMessageString(MessageKey messageKey){
-        return getMessageString(messageKey, true);
+    public static String getMessageText(MessageKey messageKey){
+        return getMessageText(messageKey, true);
     }
-    
-    public static String getMessage(MessageKey key, String[] replacements){
-        var messageString = getMessageString(key);
-        for (var replacement : replacements){
-            messageString = messageString.replaceFirst("\\{\\}", Matcher.quoteReplacement(replacement));
+
+    public static String getMessageText(MessageKey messageKey, String[] replacements){
+        String text = getMessageText(messageKey);
+        StringBuffer result = new StringBuffer();
+
+        Pattern pattern = Pattern.compile("%(?:(\\d)\\$)?s");
+        Matcher matcher = pattern.matcher(text);
+
+        int location = 1;
+        while (matcher.find()){
+            String match = matcher.group(0);
+            String p1 = matcher.group(1);
+            String replacement;
+            int index;
+            if (p1 != null){
+                index = Integer.parseInt(p1) - 1;
+            } else {
+                index = location - 1;
+                location++;
+            }
+            if (index < replacements.length){
+                replacement = replacements[index];
+            } else {
+                replacement = match;
+            }
+            if (replacement == null){
+                replacement = "";
+            } else {
+                replacement = Matcher.quoteReplacement(replacement);
+            }
+            matcher.appendReplacement(result, replacement);
         }
-        return messageString;
-    }
-    public static String getMessage(MessageKey key){
-        return getMessageString(key);
-    }
-    public static String getMessage(MessageKey key, String replacement, String... replacements){
-       String[] fullReplacements = new String[replacements.length + 1];
-       fullReplacements[0] = replacement;
-       for (int idx = 1; idx <= replacements.length; idx++){
-          fullReplacements[idx] = replacements[idx - 1];
-       }
-       return getMessage(key, fullReplacements);
+        matcher.appendTail(result);
+
+        return result.toString();
     }
 
-    public Messages(Platform<Sender, Player> platform){
-        this.platform = platform;
-    }
-    private Platform<Sender, Player> platform;
+    public static String getMessageText(MessageKey messageKey, List<String> replacements){
+        String text = getMessageText(messageKey);
+        StringBuffer result = new StringBuffer();
 
-    public String getMessage(Player player, MessageKey key, String[] replacements){
-        return getMessage(key, replacements);
-    }
-    public String getMessage(Player player, MessageKey key){
-        return getMessage(key);
-    }
-    public String getMessage(Player player, MessageKey key, String replacement, String... replacements){
-       String[] fullReplacements = new String[replacements.length + 1];
-       fullReplacements[0] = replacement;
-       for (int idx = 1; idx <= replacements.length; idx++){
-          fullReplacements[idx] = replacements[idx - 1];
-       }
-       return getMessage(player, key, fullReplacements);
-    }
+        Pattern pattern = Pattern.compile("%(?:(\\d)\\$)?s");
+        Matcher matcher = pattern.matcher(text);
 
-    public void send(Sender sender, MessageKey key, String replacement, String... replacements){
-        String[] fullReplacements = new String[replacements.length + 1];
-        fullReplacements[0] = replacement;
-        for (int idx = 1; idx <= replacements.length; idx++){
-           fullReplacements[idx] = replacements[idx - 1];
+        int location = 1;
+        while (matcher.find()){
+            String match = matcher.group(0);
+            String p1 = matcher.group(1);
+            String replacement;
+            int index;
+            if (p1 != null){
+                index = Integer.parseInt(p1) - 1;
+            } else {
+                index = location - 1;
+                location++;
+            }
+            if (index < replacements.size()){
+                replacement = replacements.get(index);
+            } else {
+                replacement = match;
+            }
+            if (replacement == null){
+                replacement = "";
+            } else {
+                replacement = Matcher.quoteReplacement(replacement);
+            }
+            matcher.appendReplacement(result, replacement);
         }
-        send(sender, key, fullReplacements);
+        matcher.appendTail(result);
+
+        return result.toString();
     }
-    public void send(Sender sender, MessageKey key, String[] replacements){
-        send(sender, getMessage(key, replacements));
+
+    public Messages(RPlayNekoCore<Sender, Player> core){
+        this.core = core;
     }
-    public void send(Sender sender, MessageKey key){
-        send(sender, getMessageString(key));
+    private final RPlayNekoCore<Sender, Player> platform;
+
+    public String getMessage(Player player, MessageKey messageKey, String... replacements){
+        return getMessageText(messageKey, replacements);
+    }
+    public String getMessage(Player player, MessageKey messageKey){
+        return getMessageText(messageKey);
+    }
+    public String getMessage(Player player, MessageKey messageKey, List<String> replacement){
+        return getMessageText(messageKey, replacements);
+    }
+
+    public String getMessage(MessageKey messageKey, String... replacements){
+        return getMessageText(messageKey, replacements);
+    }
+    public String getMessage(MessageKey messageKey){
+        return getMessageText(messageKey);
+    }
+    public String getMessage(MessageKey messageKey, List<String> replacement){
+        return getMessageText(messageKey, replacements);
+    }
+
+    //TODO: 多语言支持
+    private String defaultLocale = null;
+    private String getMessage(String locale, MessageKey messageKey, String[] replacements){
+        return getMessageText(messageKey, replacements);
+    }
+    private String getMessage(String locale, MessageKey messageKey){
+        return getMessageText(messageKey);
+    }
+    private String getMessage(String locale, MessageKey messageKey, List<String> replacement){
+        return getMessageText(messageKey, replacements);
     }
 
     public void send(Sender sender, String message){
-        var prefix = getMessageString(MessageKey.CHAT_PREFIX);
+        String prefix = getMessageText(MessageKey.CHAT_PREFIX);
         if (prefix.length() > 0){
             prefix += " ";
         }
 
         for (var line : message.split("\n")){
             line = prefix + line;
-            this.platform.sendMessage(sender, line);
+            this.core.getPlatform().sendMessage(sender, line);
         }
     }
-    
-    public void sendPlayer(Player sender, MessageKey key, String replacement, String... replacements){
-        String[] fullReplacements = new String[replacements.length + 1];
-        fullReplacements[0] = replacement;
-        for (int idx = 1; idx <= replacements.length; idx++){
-           fullReplacements[idx] = replacements[idx - 1];
-        }
-        sendPlayer(sender, key, fullReplacements);
+    public void send(Sender sender, MessageKey messageKey, List<String> replacements){
+        send(sender, getMessage(messageKey, replacements));
     }
-    public void sendPlayer(Player sender, MessageKey key, String[] replacements){
-        sendPlayer(sender, getMessage(key, replacements));
+    public void send(Sender sender, MessageKey messageKey, String[] replacements){
+        send(sender, getMessage(messageKey, replacements));
     }
-    public void sendPlayer(Player sender, MessageKey key){
-        sendPlayer(sender, getMessageString(key));
+    public void send(Sender sender, MessageKey messageKey){
+        send(sender, getMessage(messageKey));
     }
 
-    public void sendPlayer(Player sender, String message){
-        var prefix = getMessageString(MessageKey.CHAT_PREFIX);
+    public void sendPlayer(Player player, String message){
+        String prefix = getMessageText(MessageKey.CHAT_PREFIX);
         if (prefix.length() > 0){
             prefix += " ";
         }
 
         for (var line : message.split("\n")){
             line = prefix + line;
-            this.platform.sendPlayerMessage(sender, line);
+            this.core.getPlatform().sendMessageToPlayer(player, line);
         }
+    }
+    public void sendPlayer(Player player, MessageKey messageKey, List<String> replacements){
+        sendPlayer(player, getMessage(player, messageKey, replacements));
+    }
+    public void sendPlayer(Player player, MessageKey messageKey, String[] replacements){
+        sendPlayer(player, getMessage(player, messageKey, replacements));
+    }
+    public void sendPlayer(Player player, MessageKey messageKey){
+        sendPlayer(player, getMessage(player, messageKey));
     }
 
-    public void consoleLog(java.util.logging.Level level, MessageKey key, String replacement, String... replacements){
-        String[] fullReplacements = new String[replacements.length + 1];
-        fullReplacements[0] = replacement;
-        for (int idx = 1; idx <= replacements.length; idx++){
-           fullReplacements[idx] = replacements[idx - 1];
-        }
-        consoleLog(level, key, fullReplacements);
+    public void consoleLog(Level level, MessageKey messageKey, String[] replacements){
+        consoleLog(level, getMessage(messageKey, replacements));
     }
-    public void consoleLog(java.util.logging.Level level, MessageKey key, String[] replacements){
-        consoleLog(level, getMessage(key, replacements));
-    }
-    public void consoleLog(java.util.logging.Level level, MessageKey key){
-        consoleLog(level, getMessageString(key));
-    }
-    public void consoleLog(java.util.logging.Level level, String message){
-        String loggerName = getMessageString(MessageKey.LOGGER_NAME);
-        if (loggerName == null
-          || loggerName.length() == 0
-          || loggerName.equals(MessageKey.LOGGER_NAME.getMessageKey())){
-            loggerName = DEFAULT_LOGGER_NAME;
-        }
+    public void consoleLog(Level level, String message){
+        Logger logger = Logger.getLogger(MessageKey.LOGGER_NAME);
+
+        // remove format code
         message = message.replaceAll("[§&]([0-9a-fmnol])", "");
-        var logger = this.platform.getLogger();
-        for (var line : message.split("\n")){
-            logger.log(level, line);
-        }
+
+        logger.log(level, line);
     }
 
-    public void consoleInfo(MessageKey key, String replacement, String... replacements){
-        String[] fullReplacements = new String[replacements.length + 1];
-        fullReplacements[0] = replacement;
-        for (int idx = 1; idx <= replacements.length; idx++){
-           fullReplacements[idx] = replacements[idx - 1];
-        }
-        consoleInfo(key, fullReplacements);
+    public void consoleInfo(MessageKey messageKey, String... replacements){
+        consoleLog(Level.INFO, messageKey, replacements);
     }
-    public void consoleInfo(MessageKey key, String[] replacements){
-        consoleInfo(getMessage(key, replacements));
+    public void consoleWarn(MessageKey messageKey, String... replacements){
+        consoleLog(Level.WARNING, messageKey, replacements);
     }
-    public void consoleInfo(MessageKey key){
-        consoleInfo(getMessageString(key));
+    public void consoleError(MessageKey messageKey, String... replacements){
+        consoleLog(Level.SEVERE, messageKey, replacements);
     }
-    public void consoleInfo(String message){
-        consoleLog(java.util.logging.Level.INFO, message);
-    }
-
-    public void consoleWarn(MessageKey key, String replacement, String... replacements){
-        String[] fullReplacements = new String[replacements.length + 1];
-        fullReplacements[0] = replacement;
-        for (int idx = 1; idx <= replacements.length; idx++){
-           fullReplacements[idx] = replacements[idx - 1];
-        }
-        consoleWarn(key, fullReplacements);
-    }
-    public void consoleWarn(MessageKey key, String[] replacements){
-        consoleWarn(getMessage(key, replacements));
-    }
-    public void consoleWarn(MessageKey key){
-        consoleWarn(getMessageString(key));
-    }
-    public void consoleWarn(String message){
-        consoleLog(java.util.logging.Level.WARNING, message);
-    }
-
-    public void consoleError(MessageKey key, String replacement, String... replacements){
-        String[] fullReplacements = new String[replacements.length + 1];
-        fullReplacements[0] = replacement;
-        for (int idx = 1; idx <= replacements.length; idx++){
-           fullReplacements[idx] = replacements[idx - 1];
-        }
-        consoleError(key, fullReplacements);
-    }
-    public void consoleError(MessageKey key, String[] replacements){
-        consoleError(getMessage(key, replacements));
-    }
-    public void consoleError(MessageKey key){
-        consoleError(getMessageString(key));
-    }
-    public void consoleError(String message){
-        consoleLog(java.util.logging.Level.SEVERE, message);
-    }
-
 }

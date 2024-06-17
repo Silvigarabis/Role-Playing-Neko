@@ -5,5 +5,5 @@ import io.github.silvigarabis.rplayneko.data.*;
 
 @FunctionalInterface
 public interface RPlayNekoPowerFactory<Player> {
-    RPlayNekoPower<Player> newPowerInstance(RPlayNekoPowerType type, RPlayNekoPlayer<Player> player);
+    RPlayNekoPower<Player> newPowerInstance(RPlayNekoPlayer<Player> player);
 }
