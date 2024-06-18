@@ -12,12 +12,12 @@
 name: "CodeQL"
 
 on:
-  push:
-    branches: [ "remake" ]
-  pull_request:
-    branches: [ "remake" ]
+  #push:
+  #  branches: [ "remake" ]
+  #pull_request:
+  #  branches: [ "remake" ]
   schedule:
-    - cron: '45 3 * * 0'
+    - cron: '23 0 * * 5'
 
 jobs:
   analyze:
