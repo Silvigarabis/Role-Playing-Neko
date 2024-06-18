@@ -144,8 +144,10 @@ public class RPlayNekoCore<Sender, Player> {
 
     public void emitEvent(Event<Player> event){
         forEachRun(this.enabledFeatures, "passing event " + event.getClass().getName(), f -> f.onEvent(event));
-        if (event instanceof ChatEvent<Player> chatEvent){
-            forEachRun(this.enabledFeatures, "passing ChatEvent", f -> f.onChatEvent(chatEvent));
+        if (event instanceof ChatEvent<Player> tEvent){
+            forEachRun(this.enabledFeatures, "passing ChatEvent", f -> f.onChatEvent(tEvent));
+        } else if (event instanceof NekoTransformEvent<Player> tEvent){
+            forEachRun(this.enabledFeatures, "passing NekoTransformEvent", f -> f.onNekoTransformEvent(tEvent));
         }
     }
 

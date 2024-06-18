@@ -55,6 +55,10 @@ public class ChatEvent<Player> extends Event<Player> {
     }
 
     @Override
+    public boolean iModifiable(){
+        return true;
+    }
+    @Override
     public boolean isCancelable(){
         return true;
     }

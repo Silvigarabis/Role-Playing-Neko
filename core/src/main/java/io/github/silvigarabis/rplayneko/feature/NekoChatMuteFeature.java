@@ -1,5 +1,6 @@
 package io.github.silvigarabis.rplayneko.feature;
 
+import io.github.silvigarabis.rplayneko.Messages;
 import io.github.silvigarabis.rplayneko.event.*;
 
 public abstract class NekoChatMuteFeature<Player> implements IFeature<Player> {
@@ -7,15 +8,9 @@ public abstract class NekoChatMuteFeature<Player> implements IFeature<Player> {
         if (!event.getPlayer().getData().isNeko()){
             return;
         }
-        event.getPlayer().getData().isMuted();
+        if (event.getPlayer().getData().isMuted()){
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(Messages.MessageKey.NOTICE_NEKO_CHAT_MUTED);
+        }
     }
 }
-
-/**
-        // mute
-        if (event.player.isNeko() && event.player.isMuted()){
-            event.result = EventResult.CANCELLED;
-            getMessages().sendPlayer(event.player.getOrigin(), Messages.MessageKey.NEKO_CHAT_MUTED);
-        }
-        
-        */

@@ -8,6 +8,8 @@ public interface IFeature<Player> {
     }
     default void onEvent(Event<Player> event){
     }
+    default void onNekoTransformEvent(NekoTransformEvent<Player> player){
+    }
     default void tick(RPlayNekoPlayer<Player> player){
     }
     default void onCoreReload(){

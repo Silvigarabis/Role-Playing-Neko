@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.*;
 
+import io.github.silvigarabis.rplayneko.event.NekoTransformEvent;
 import io.github.silvigarabis.rplayneko.power.*;
 import io.github.silvigarabis.rplayneko.Messages;
 import io.github.silvigarabis.rplayneko.RPlayNekoCore;
@@ -23,28 +24,44 @@ public class RPlayNekoPlayer<T> {
         return core;
     }
 
-    public void transformToNeko(@Nullable UUID castor){
-        if (!this.data.isNeko()){
-            data.setNeko(true);
-            data.setCastor(castor);
-        }
-    }
-    public void transformBack(){
+    public boolean transformToNeko(@Nullable UUID castor){
         if (this.data.isNeko()){
-            data.setNeko(false);
-            data.setMuted(false);
-            data.setNyaText(null);
-            data.setCastor(null);
-            data.getSpeakReplaces().clear();
-            data.getRegexpSpeakReplaces().clear();
-            data.getEnabledPowers().clear();
-            data.getOwnerCalls().clear();
-            data.getExperiences().clear();
-            data.setOwners(null);
-            data.markDirty();
-            // for save-only-neko-data
-            //data.markDelete();
+            return false;
         }
+        NekoTransformEvent<T> tEvent = new NekoTransformEvent<>(this, false);
+        this.core.emitEvent(tEvent);
+        if (tEvent.isCancelled()){
+            return false;
+        }
+        data.setNeko(true);
+        data.setCastor(castor);
+
+        return true;
+    }
+    public boolean transformBack(){
+        if (!this.data.isNeko()){
+            return false;
+        }
+        NekoTransformEvent<T> tEvent = new NekoTransformEvent<>(this, true);
+        this.core.emitEvent(tEvent);
+        if (tEvent.isCancelled()){
+            return false;
+        }
+        data.setNeko(false);
+        data.setMuted(false);
+        data.setNyaText(null);
+        data.setCastor(null);
+        data.getSpeakReplaces().clear();
+        data.getRegexpSpeakReplaces().clear();
+        data.getEnabledPowers().clear();
+        data.getMasterCalls().clear();
+        data.getExperiences().clear();
+        data.setOwners(null);
+        data.markDirty();
+        // for save-only-neko-data
+        //data.markDelete();
+
+        return true;
     }
 
     public RPlayNekoPlayer(@NotNull RPlayNekoCore<?, T> core, @NotNull T origin, @NotNull RPlayNekoData data){
@@ -92,6 +109,19 @@ public class RPlayNekoPlayer<T> {
     public void tick(){
         this.powers.values().stream()
             .forEach(p -> p.tick());
+    }
+
+    public void sendMessage(String message){
+        this.getCore().getMessages().sendPlayer(this.origin, message);
+    }
+    public void sendMessage(Messages.MessageKey messageKey, List<String> replacements){
+        this.getCore().getMessages().sendPlayer(this.origin, messageKey, replacements);
+    }
+    public void sendMessage(Messages.MessageKey messageKey, String... replacements){
+        this.getCore().getMessages().sendPlayer(this.origin, messageKey, replacements);
+    }
+    public void sendMessage(Messages.MessageKey messageKey){
+        this.getCore().getMessages().sendPlayer(this.origin, messageKey);
     }
 
     @Override

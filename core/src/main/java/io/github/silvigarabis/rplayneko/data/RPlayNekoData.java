@@ -49,7 +49,7 @@ public class RPlayNekoData {
     private final Map<UUID, Integer> experiences = new ConcurrentHashMap<>();
     private final Map<String, String> speakReplaces = new ConcurrentHashMap<>();
     private final Map<String, String> regexpSpeakReplaces = new ConcurrentHashMap<>();
-    private final Set<String> ownerCalls = ConcurrentHashMap.newKeySet();
+    private final Set<String> masterCalls = ConcurrentHashMap.newKeySet();
     private final Set<RPlayNekoPowerType> enabledPowers = ConcurrentHashMap.newKeySet();
     private final List<UUID> owners = new ArrayList<>();
 
@@ -149,20 +149,20 @@ public class RPlayNekoData {
         return result;
     }
 
-    public Set<String> getOwnerCalls(){
-        return ownerCalls;
+    public Set<String> getMasterCalls(){
+        return masterCalls;
     }
 
-    public boolean addOwnerCall(@NotNull String call){
-        boolean result = ownerCalls.add(call);
+    public boolean addMasterCall(@NotNull String call){
+        boolean result = masterCalls.add(call);
         if (result){
             markDirty();
         }
         return result;
     }
 
-    public boolean removeOwnerCall(@NotNull String call){
-        boolean result = ownerCalls.remove(call);
+    public boolean removeMasterCall(@NotNull String call){
+        boolean result = masterCalls.remove(call);
         if (result){
             markDirty();
         }

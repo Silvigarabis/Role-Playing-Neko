@@ -31,12 +31,19 @@ public abstract class Event<Player> {
             result = EventResult.MODIFIED;
         }
     }
-    public boolean isCancelable(){
-        return false;
-    }
-    protected void markModified(){
+    public void markModified(){
+        if (!iModifiable()){
+            throw new IllegalStateException("event cannot be modified");
+        }
         if (result == EventResult.NORMAL){
             result = EventResult.MODIFIED;
         }
+    }
+
+    public boolean iModifiable(){
+        return false;
+    }
+    public boolean isCancelable(){
+        return false;
     }
 }

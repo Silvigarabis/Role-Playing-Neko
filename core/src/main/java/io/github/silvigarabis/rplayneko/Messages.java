@@ -21,7 +21,6 @@ public class Messages<Sender, Player> {
 
         COMMAND_HELP_NO_PERMISSION("command-help.no-permission"),
         COMMAND_HELP_GENERAL("command-help.general"),
-        COMMAND_HELP_ESGUI("command-help.esgui"),
 
         INVALID_PLUGIN_CONFIG("console-message.invalid-plugin-config", "配置文件错误！尝试在修正后使用/esplitter reload重新加载"),
         PLUGIN_LOADING("console-message.plugin-loading", "插件正在加载"),
@@ -35,11 +34,9 @@ public class Messages<Sender, Player> {
         PLUGIN_MESSAGE_CONFIG_LOADED("console-message.plugin-message-config-loaded", "消息文本已加载"),
         PLUGIN_MESSAGE_CONFIG_LOAD_MISSING("console-message.plugin-message-config-missing", "缺失 {} 条消息文本： {}"),
 
-        NEKO_CALL_MASTER_NAME("neko-call-master-name"),
-        NEKO_NOTICE_MUTED("neko-notice-muted"),
-        NEKO_NOTICE_UNMUTED("neko-notice-unmuted"),
-        NEKO_CHAT_MUTED("neko-chat-muted"),
-        NEKO_CHAT_PREFIX("neko-chat-prefix"),
+        NEKO_NYA_TEXT("rplayneko.defaults.nya_text"),
+        NEKO_CALL_MASTER("rplayneko.defaults.nya_text"),
+        NOTICE_NEKO_CHAT_MUTED(""),
 
         CHAT_PREFIX("chat-prefix", "[RPlayNeko]"),
         LOGGER_NAME("logger-name", "RPlayNeko");
