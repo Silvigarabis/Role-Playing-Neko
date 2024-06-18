@@ -94,6 +94,11 @@ public class RPlayNekoPlayer<T> {
         }
     }
 
+    private Map<RPlayNekoPowerType, RPlayNekoPower<T>> powersView = Collections.unmodifiableMap(powers);
+    public @UnmodifiableView Map<RPlayNekoPowerType, RPlayNekoPower<T>> getPowers(){
+        return powersView;
+    }
+
     public boolean enablePower(RPlayNekoPowerType powerType){
         boolean result = data.addEnabledPower(powerType);
         applyPowerChange();
@@ -104,11 +109,6 @@ public class RPlayNekoPlayer<T> {
         boolean result = data.removeEnabledPower(powerType);
         applyPowerChange();
         return result;
-    }
-
-    public void tick(){
-        this.powers.values().stream()
-            .forEach(p -> p.tick());
     }
 
     public void sendMessage(String message){
@@ -122,6 +122,10 @@ public class RPlayNekoPlayer<T> {
     }
     public void sendMessage(Messages.MessageKey messageKey){
         this.getCore().getMessages().sendPlayer(this.origin, messageKey);
+    }
+
+    public void tick(){
+        this.getCore().forEachRun(this.getCore().getEnabledFeatures(), "ticking player", f -> f.tick(this));
     }
 
     @Override

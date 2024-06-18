@@ -4,7 +4,7 @@ import io.github.silvigarabis.rplayneko.util.*;
 import io.github.silvigarabis.rplayneko.event.*;
 import static io.github.silvigarabis.rplayneko.Messages.MessageKey.NEKO_CALL_MASTER;
 
-public class ChatMasterCallFeature<Player> implements IFeature<Player> {
+public class NekoChatMasterCallFeature<Player> implements IFeature<Player> {
     public void onChatEvent(ChatEvent<Player> event){
         if (!event.getPlayer().getData().isNeko()){
             return;

@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 /**
  * 使用要求：
  * 创建并加载配置后，请调用 initDataSource()，务必保证 platform.getDataTarget() 已经可以正常返回结果
- * 每1秒调用一次 tick()
+ * 每1秒调用一次 tick()（除了Folia平台）（这会为每一个玩家调用 tick()）
  * 需要触发事件请使用 emitEvent(Event)
  */
 public class RPlayNekoCore<Sender, Player> {
@@ -96,11 +96,15 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     private Set<IFeature<Player>> enabledFeatures = new HashSet<>();
+    private Set<IFeature<Player>> enabledFeaturesView = Collections.unmodifiableSet(enabledFeatures);
     public void addFeature(IFeature<Player> feature){
         enabledFeatures.add(feature);
     }
     public void removeFeature(IFeature<Player> feature){
         enabledFeatures.remove(feature);
+    }
+    public @UnmodifiableView Set<IFeature<Player>> getEnabledFeatures(){
+        return enabledFeaturesView;
     }
 
     public Logger getLogger(){
@@ -138,7 +142,7 @@ public class RPlayNekoCore<Sender, Player> {
     public void tick(){
         for (Player origin : platform.getPlayers()){
             var player = getNekoPlayer(platform.getPlayerUuid(origin), origin);
-            forEachRun(this.enabledFeatures, "ticking player", f -> f.tick(player));
+            player.tick();
         }
     }
 
@@ -151,7 +155,7 @@ public class RPlayNekoCore<Sender, Player> {
         }
     }
 
-    private <T> void forEachRun(Iterable<T> it, String message, Consumer<T> a){
+    public <T> void forEachRun(Iterable<T> it, String message, Consumer<T> a){
         for (T value : it){
             try {
                 a.accept(value);

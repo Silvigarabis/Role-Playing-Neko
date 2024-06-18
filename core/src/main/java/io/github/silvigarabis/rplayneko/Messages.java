@@ -35,8 +35,9 @@ public class Messages<Sender, Player> {
         PLUGIN_MESSAGE_CONFIG_LOAD_MISSING("console-message.plugin-message-config-missing", "缺失 {} 条消息文本： {}"),
 
         NEKO_NYA_TEXT("rplayneko.defaults.nya_text"),
-        NEKO_CALL_MASTER("rplayneko.defaults.nya_text"),
-        NOTICE_NEKO_CHAT_MUTED(""),
+        NEKO_CALL_MASTER("rplayneko.defaults.master_call"),
+        NEKO_NAME_PREFIX("rplayneko.defaults.name_prefix"),
+        NOTICE_NEKO_CHAT_MUTED("rplayneko.neko_muted"),
 
         CHAT_PREFIX("chat-prefix", "[RPlayNeko]"),
         LOGGER_NAME("logger-name", "RPlayNeko");
