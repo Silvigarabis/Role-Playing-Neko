@@ -24,7 +24,7 @@ processResources {
         expand([
             "version": project.version,
             "project_id": project.project_id,
-            "project_name": project.project_name,
+            "project_name": project.project_short_name,
 
             "description": rootProject.ext.description,
             "author": rootProject.ext.author,

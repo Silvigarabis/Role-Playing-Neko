@@ -2,7 +2,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
-println "RolePlayingNeko " + version
+println project_name + " " + version
 
 import java.util.Properties;
 import java.io.*;

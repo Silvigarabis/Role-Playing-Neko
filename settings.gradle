@@ -25,4 +25,4 @@ enabled_platforms.each { platform ->
     project(name).projectDir = file("platforms/" + platform)
 }
 
-rootProject.name = "role_playing_neko"
+rootProject.name = project_name
