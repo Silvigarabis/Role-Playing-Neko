@@ -1,8 +1,7 @@
 package io.github.silvigarabis.rplayneko;
 
-import io.github.silvigarabis.rplayneko.storage.IDataTarget;
-import io.github.silvigarabis.rplayneko.command.Command;
 import io.github.silvigarabis.rplayneko.data.*;
+import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
 import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerFactory;
 import java.util.logging.Logger;
 import java.util.*;
@@ -79,7 +78,7 @@ public interface Platform<Sender, Player> {
 
     void sendMessage(Sender sender, String message);
 
-    void sendPlayerMessage(Player player, String message);
+    void sendMessageToPlayer(Player player, String message);
 
     Player getPlayerByUuid(UUID uuid);
 

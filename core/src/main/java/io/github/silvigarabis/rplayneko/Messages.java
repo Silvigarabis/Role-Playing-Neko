@@ -53,11 +53,11 @@ public class Messages<Sender, Player> {
             return defaultText;
         }
         private MessageKey(String messageKey){
-            this.messageKey = messageKey;
-            this.defaultString = null;
+            this.key = messageKey;
+            this.defaultText = null;
         }
         private MessageKey(String messageKey, String defaultText){
-            this.messageKey = messageKey;
+            this.key = messageKey;
             this.defaultText = defaultText;
         }
 
@@ -90,7 +90,7 @@ public class Messages<Sender, Player> {
         for (MessageKey messageKey : MessageKey.Keys.keySet()){
             String key = messageKey.getKey();
             String messageText = messageConfig.get(key);
-            if (messageString != null){
+            if (messageText != null){
                 messages.put(messageKey, messageText);
             }
         }
@@ -99,7 +99,7 @@ public class Messages<Sender, Player> {
     public static String getMessageText(MessageKey messageKey, boolean translateColorCode){
         String text = messages.get(messageKey);
         if (text == null){
-            text = messageKey.getDefaultString();
+            text = messageKey.getDefaultText();
         }
 
         if (text == null){
@@ -108,7 +108,7 @@ public class Messages<Sender, Player> {
             text = text.replaceAll("&([0-9a-fmnol])", "§$1");
             text = text.replaceAll("&&", "&");
         }
-        return string;
+        return text;
     }
     public static String getMessageText(MessageKey messageKey){
         return getMessageText(messageKey, true);
@@ -189,7 +189,7 @@ public class Messages<Sender, Player> {
     public Messages(RPlayNekoCore<Sender, Player> core){
         this.core = core;
     }
-    private final RPlayNekoCore<Sender, Player> platform;
+    private final RPlayNekoCore<Sender, Player> core;
 
     public String getMessage(Player player, MessageKey messageKey, String... replacements){
         return getMessageText(messageKey, replacements);
@@ -197,7 +197,7 @@ public class Messages<Sender, Player> {
     public String getMessage(Player player, MessageKey messageKey){
         return getMessageText(messageKey);
     }
-    public String getMessage(Player player, MessageKey messageKey, List<String> replacement){
+    public String getMessage(Player player, MessageKey messageKey, List<String> replacements){
         return getMessageText(messageKey, replacements);
     }
 
@@ -207,7 +207,7 @@ public class Messages<Sender, Player> {
     public String getMessage(MessageKey messageKey){
         return getMessageText(messageKey);
     }
-    public String getMessage(MessageKey messageKey, List<String> replacement){
+    public String getMessage(MessageKey messageKey, List<String> replacements){
         return getMessageText(messageKey, replacements);
     }
 
@@ -219,7 +219,7 @@ public class Messages<Sender, Player> {
     private String getMessage(String locale, MessageKey messageKey){
         return getMessageText(messageKey);
     }
-    private String getMessage(String locale, MessageKey messageKey, List<String> replacement){
+    private String getMessage(String locale, MessageKey messageKey, List<String> replacements){
         return getMessageText(messageKey, replacements);
     }
 
@@ -269,12 +269,12 @@ public class Messages<Sender, Player> {
         consoleLog(level, getMessage(messageKey, replacements));
     }
     public void consoleLog(Level level, String message){
-        Logger logger = Logger.getLogger(MessageKey.LOGGER_NAME);
+        Logger logger = Logger.getLogger(getMessage(MessageKey.LOGGER_NAME));
 
         // remove format code
         message = message.replaceAll("[§&]([0-9a-fmnol])", "");
 
-        logger.log(level, line);
+        logger.log(level, message);
     }
 
     public void consoleInfo(MessageKey messageKey, String... replacements){

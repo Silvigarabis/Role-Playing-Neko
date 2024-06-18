@@ -54,7 +54,7 @@ public class RPlayNekoPlayer<T> {
         applyPowerChange();
     }
 
-    private Map<RPlayNekoPowerType, RPlayNekoPower> powers = new HashMap<>();
+    private Map<RPlayNekoPowerType, RPlayNekoPower<T>> powers = new HashMap<>();
     private void applyPowerChange(){
         var enabledPowers = data.getEnabledPowers();
         if (powers.keySet().equals(enabledPowers)){
@@ -90,8 +90,8 @@ public class RPlayNekoPlayer<T> {
     }
 
     public void tick(){
-        this.powers.valueSet().stream()
-            .forEach(RPlayNekoPower::tick);
+        this.powers.values().stream()
+            .forEach(p -> p.tick());
     }
 
     @Override

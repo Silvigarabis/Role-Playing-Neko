@@ -1,6 +1,5 @@
 package io.github.silvigarabis.rplayneko;
 
-import io.github.silvigarabis.rplayneko.storage.IDataTarget;
 import java.util.logging.Logger;
 import java.util.UUID;
 

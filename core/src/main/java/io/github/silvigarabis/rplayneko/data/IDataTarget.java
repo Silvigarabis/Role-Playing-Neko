@@ -1,4 +1,4 @@
-package io.github.silvigarabis.rplayneko.storage;
+package io.github.silvigarabis.rplayneko.data;
 
 import java.util.UUID;
 import org.jetbrains.annotations.*;

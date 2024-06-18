@@ -1,6 +1,6 @@
 package io.github.silvigarabis.rplayneko.data;
 
-import io.github.silvigarabis.rplayneko.api.RPlayNekoPowerType;
+import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
 
 import java.util.*;
 import org.jetbrains.annotations.*;
@@ -16,6 +16,9 @@ public class RPlayNekoData {
     @ApiStatus.Internal
     public void _delete(boolean delete){
         _delete = delete;
+        if (delete){
+            _dirty = false;
+        }
     }
     @ApiStatus.Internal
     public boolean _dirty(){
@@ -24,6 +27,9 @@ public class RPlayNekoData {
     @ApiStatus.Internal
     public void _dirty(boolean dirty){
         _dirty = dirty;
+        if (dirty){
+            _delete = false;
+        }
     }
 
     public void markDirty(){
@@ -100,11 +106,11 @@ public class RPlayNekoData {
         }
         throw new IllegalArgumentException("no xp record found");
     }
-    public boolean setExperience(@NotNull UUID player, int xp){
+    public void setExperience(@NotNull UUID player, int xp){
         experiences.put(player, xp);
         markDirty();
     }
-    public boolean deleteExperience(@NotNull UUID player){
+    public void deleteExperience(@NotNull UUID player){
         experiences.remove(player);
         markDirty();
     }

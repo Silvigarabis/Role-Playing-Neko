@@ -1,13 +1,14 @@
 package io.github.silvigarabis.rplayneko.event;
 
 import io.github.silvigarabis.rplayneko.data.*;
+import org.jetbrains.annotations.*;
 
 public class ChatEvent<Player> extends Event<Player> {
     private @Nullable String namePrefix = null;
     public @Nullable String getNamePrefix(){
         return namePrefix;
     }
-    public void setNameSuffix(@Nullable String namePrefix){
+    public void setNamePrefix(@Nullable String namePrefix){
         this.namePrefix = namePrefix;
         markModified();
     }

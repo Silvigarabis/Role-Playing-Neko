@@ -10,7 +10,7 @@ public class RPlayNekoPowerType {
     }
     @Override
     public boolean equals(Object o){
-        return o instanceof RPlayNekoPowerType && o.getName().equals(this.getName());
+        return o instanceof RPlayNekoPowerType otype && otype.getName().equals(this.getName());
     }
     @Override
     public int hashCode(){

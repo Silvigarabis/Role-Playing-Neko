@@ -3,8 +3,6 @@ package io.github.silvigarabis.rplayneko;
 import io.github.silvigarabis.rplayneko.event.*;
 import io.github.silvigarabis.rplayneko.data.*;
 import io.github.silvigarabis.rplayneko.power.*;
-import io.github.silvigarabis.rplayneko.command.*;
-import io.github.silvigarabis.rplayneko.storage.IDataTarget;
 import io.github.silvigarabis.rplayneko.util.*;
 
 import org.jetbrains.annotations.*;
@@ -33,7 +31,7 @@ public class RPlayNekoCore<Sender, Player> {
         }
 
         RPlayNekoData playerData = getDataSource().fetchData(uuid);
-        RPlayNekoPlayer<Player> player = new RPlayNekoPlayer<>(origin, this, data);
+        RPlayNekoPlayer<Player> player = new RPlayNekoPlayer<>(this, origin, playerData);
         synchronized(nekoPlayerOriginMap){
             nekoPlayerOriginMap.put(origin, player);
         }
@@ -81,7 +79,7 @@ public class RPlayNekoCore<Sender, Player> {
 
     public RPlayNekoCore(Platform<Sender, Player> platform){
         this.platform = platform;
-        this.messages = new Messages<>(platform);
+        this.messages = new Messages<>(this);
         this.reloadConfig();
         INSTANCE = this;
     }
