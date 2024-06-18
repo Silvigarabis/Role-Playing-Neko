@@ -39,8 +39,11 @@ public class RPlayNekoPlayer<T> {
             data.getRegexpSpeakReplaces().clear();
             data.getEnabledPowers().clear();
             data.getOwnerCalls().clear();
+            data.getExperiences().clear();
             data.setOwners(null);
             data.markDirty();
+            // for save-only-neko-data
+            //data.markDelete();
         }
     }
 

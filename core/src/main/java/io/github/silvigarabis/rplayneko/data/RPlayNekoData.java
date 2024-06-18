@@ -7,7 +7,16 @@ import org.jetbrains.annotations.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RPlayNekoData {
-    private boolean dirty = true;
+    private boolean _dirty = true;
+    private boolean _delete = false;
+    @ApiStatus.Internal
+    public boolean _delete(){
+        return _delete;
+    }
+    @ApiStatus.Internal
+    public void _delete(boolean delete){
+        _delete = delete;
+    }
     @ApiStatus.Internal
     public boolean _dirty(){
         return _dirty;
@@ -16,8 +25,12 @@ public class RPlayNekoData {
     public void _dirty(boolean dirty){
         _dirty = dirty;
     }
+
     public void markDirty(){
         _dirty(true);
+    }
+    public void markDelete(){
+        _delete(true);
     }
 
     private final  @NotNull UUID uuid;
@@ -32,7 +45,7 @@ public class RPlayNekoData {
     private final Map<String, String> regexpSpeakReplaces = new ConcurrentHashMap<>();
     private final Set<String> ownerCalls = ConcurrentHashMap.newKeySet();
     private final Set<RPlayNekoPowerType> enabledPowers = ConcurrentHashMap.newKeySet();
-    private final Set<UUID> owners = ConcurrentHashMap.newKeySet();
+    private final List<UUID> owners = new ArrayList<>();
 
     public RPlayNekoData(UUID uuid){
         this.uuid = uuid;
@@ -85,7 +98,7 @@ public class RPlayNekoData {
         if (experiences.containsKey(player)){
             return experiences.get(player);
         }
-        throw IllegalArgumentException("no xp record found");
+        throw new IllegalArgumentException("no xp record found");
     }
     public boolean setExperience(@NotNull UUID player, int xp){
         experiences.put(player, xp);
@@ -106,10 +119,11 @@ public class RPlayNekoData {
     }
 
     public boolean removeRegexpSpeakReplace(@NotNull String pattern){
-        boolean result = regexpSpeakReplaces.remove(pattern);
+        boolean result = null != regexpSpeakReplaces.remove(pattern);
         if (result){
             markDirty();
         }
+        return result;
     }
 
     public Map<String, String> getSpeakReplaces(){
@@ -122,10 +136,11 @@ public class RPlayNekoData {
     }
 
     public boolean removeSpeakReplace(@NotNull String pattern){
-        boolean result = speakReplaces.remove(pattern);
+        boolean result = null != speakReplaces.remove(pattern);
         if (result){
             markDirty();
         }
+        return result;
     }
 
     public Set<String> getOwnerCalls(){
@@ -185,7 +200,7 @@ public class RPlayNekoData {
         }
     }
 
-    public @Nullable getOwner(){
+    public @Nullable UUID getOwner(){
         synchronized(owners){
             if (owners.size() > 0){
                 return owners.get(0);
@@ -194,18 +209,14 @@ public class RPlayNekoData {
         return null;
     }
 
-    public boolean setOwner(@NotNull UUID owner){
-        boolean result;
+    public void setOwner(@NotNull UUID owner){
         synchronized(owners){
             if (owners.contains(owner)){
                 owners.remove(owner);
             }
-            result = owners.add(0, owner);
-        }
-        if (result){
+            owners.add(0, owner);
             markDirty();
         }
-        return result;
     }
 
     public boolean addOwner(@NotNull UUID owner){

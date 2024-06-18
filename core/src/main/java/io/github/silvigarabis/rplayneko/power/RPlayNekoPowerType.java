@@ -1,4 +1,4 @@
-package io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
+package io.github.silvigarabis.rplayneko.power;
 
 public class RPlayNekoPowerType {
     private final String name;

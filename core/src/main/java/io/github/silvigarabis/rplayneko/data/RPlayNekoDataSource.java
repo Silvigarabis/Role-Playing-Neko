@@ -116,11 +116,18 @@ public class RPlayNekoDataSource {
 
     public boolean unloadData(UUID uuid){
         checkIsClosed();
-        if (!dataMap.containsKey(uuid)){
+        var data = dataMap.get(uuid);
+        if (data == null){
             return false;
         }
-        var data = getData(uuid);
-        return dataTarget.saveToDisk(uuid, data);
+        return unloadData0(uuid);
+    }
+    private boolean unloadData0(RPlayNekoData data){
+        if (data._delete()){
+            return dataTarget.deleteInDisk(data.getUuid());
+        } else {
+            return dataTarget.saveToDisk(data.getUuid(), data);
+        }
     }
 
     public int unloadDataIf(Predicate<RPlayNekoData> p){
@@ -134,8 +141,7 @@ public class RPlayNekoDataSource {
         }
 
         for (var data : listDataToUnload){
-            dataTarget.saveToDisk(data.getUuid(), data);
-            removeData(data.getUuid());
+            unloadData0(data);
         }
 
         return listDataToUnload.size();
@@ -173,9 +179,8 @@ public class RPlayNekoDataSource {
      */
     public boolean unloadAllData(){
         checkIsClosed();
-        for (Map.Entry<UUID, RPlayNekoData> entry : dataMap.entrySet()){
-            dataTarget.saveToDisk(entry.getKey(), entry.getValue());
-            dataMap.remove(entry.getKey());
+        for (RPlayNekoData data : dataMap.valueSet()){
+            unloadData0(data);
         }
         return true;
     }

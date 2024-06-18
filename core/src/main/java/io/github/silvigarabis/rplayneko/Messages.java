@@ -105,7 +105,7 @@ public class Messages<Sender, Player> {
         if (text == null){
             text = messageKey.getKey();
         } else if (translateColorCode){
-            text = text.replaceAll("&([0-9a-fmnol])", "§$1")
+            text = text.replaceAll("&([0-9a-fmnol])", "§$1");
             text = text.replaceAll("&&", "&");
         }
         return string;
