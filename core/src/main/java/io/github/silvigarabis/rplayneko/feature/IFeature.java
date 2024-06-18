@@ -10,4 +10,8 @@ public interface IFeature<Player> {
     }
     default void tick(RPlayNekoPlayer<Player> player){
     }
+    default void onCoreReload(){
+    }
+    default void onCoreStop(){
+    }
 }

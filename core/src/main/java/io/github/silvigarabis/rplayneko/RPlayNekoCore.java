@@ -2,13 +2,22 @@ package io.github.silvigarabis.rplayneko;
 
 import io.github.silvigarabis.rplayneko.event.*;
 import io.github.silvigarabis.rplayneko.data.*;
-import io.github.silvigarabis.rplayneko.power.*;
 import io.github.silvigarabis.rplayneko.util.*;
+import io.github.silvigarabis.rplayneko.feature.IFeature;
+import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
+import io.github.silvigarabis.rplayneko.power.RPlayNekoPower;
 
 import org.jetbrains.annotations.*;
 import java.util.logging.Logger;
 import java.util.*;
+import java.util.function.Consumer;
 
+/**
+ * 使用要求：
+ * 创建并加载配置后，请调用 initDataSource()，务必保证 platform.getDataTarget() 已经可以正常返回结果
+ * 每1秒调用一次 tick()
+ * 需要触发事件请使用 emitEvent(Event)
+ */
 public class RPlayNekoCore<Sender, Player> {
     private static RPlayNekoCore<?, ?> INSTANCE = null;
     public static RPlayNekoCore<?, ?> getInstance(){
@@ -16,9 +25,6 @@ public class RPlayNekoCore<Sender, Player> {
             throw new IllegalStateException("core not init");
         }
         return INSTANCE;
-    }
-    public static @Nullable RPlayNekoPlayer<?> Instance_getNekoPlayer(@NotNull UUID uuid){
-        return getInstance().getNekoPlayer(uuid);
     }
 
     private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMap = new WeakHashMap<>();
@@ -89,6 +95,14 @@ public class RPlayNekoCore<Sender, Player> {
         return platform;
     }
 
+    private Set<IFeature<Player>> enabledFeatures = new HashSet<>();
+    public void addFeature(IFeature<Player> feature){
+        enabledFeatures.add(feature);
+    }
+    public void removeFeature(IFeature<Player> feature){
+        enabledFeatures.remove(feature);
+    }
+
     public Logger getLogger(){
         return platform.getLogger();
     }
@@ -98,6 +112,7 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     public void reload(){
+        forEachRun(this.enabledFeatures, "execute callback onCoreReload", f -> f.onCoreReload());
         this.dataSource.close();
         this.dataSource = null;
         this.reloadConfig();
@@ -105,6 +120,8 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     public void stop(){
+        forEachRun(this.enabledFeatures, "execute callback onCoreStop", f -> f.onCoreStop());
+        enabledFeatures.clear();
         this.dataSource.unloadAllData();
         this.dataSource.close();
         this.dataSource = null;
@@ -116,5 +133,29 @@ public class RPlayNekoCore<Sender, Player> {
 
     public boolean checkPermission(Sender sender, String permission){
         return this.platform.checkPermission(sender, "rplayneko." + permission);
+    }
+
+    public void tick(){
+        for (Player origin : platform.getPlayers()){
+            var player = getNekoPlayer(platform.getPlayerUuid(origin), origin);
+            forEachRun(this.enabledFeatures, "ticking player", f -> f.tick(player));
+        }
+    }
+
+    public void emitEvent(Event<Player> event){
+        forEachRun(this.enabledFeatures, "passing event " + event.getClass().getName(), f -> f.onEvent(event));
+        if (event instanceof ChatEvent<Player> chatEvent){
+            forEachRun(this.enabledFeatures, "passing ChatEvent", f -> f.onChatEvent(chatEvent));
+        }
+    }
+
+    private <T> void forEachRun(Iterable<T> it, String message, Consumer<T> a){
+        for (T value : it){
+            try {
+                a.accept(value);
+            } catch (Throwable ex){
+                this.getLogger().log(java.util.logging.Level.SEVERE, "error while " + message, ex);
+            }
+        }
     }
 }

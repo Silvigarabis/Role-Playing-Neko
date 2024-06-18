@@ -82,6 +82,10 @@ public interface Platform<Sender, Player> {
 
     Player getPlayerByUuid(UUID uuid);
 
+    UUID getPlayerUuid(Player origin);
+
+    List<Player> getPlayers();
+
     boolean checkPermission(Sender sender, String permission);
 
     RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type);
