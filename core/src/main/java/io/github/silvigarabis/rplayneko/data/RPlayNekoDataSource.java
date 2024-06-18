@@ -5,8 +5,6 @@ import java.util.function.Predicate;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.*;
 
-import io.github.silvigarabis.rplayneko.storage.IDataTarget;
-
 public class RPlayNekoDataSource {
 
     private final Map<UUID, RPlayNekoData> dataMap = new ConcurrentHashMap<>();
@@ -44,9 +42,23 @@ public class RPlayNekoDataSource {
         getData(uuid)._dirty(true);
     }
 
+    public @NotNull RPlayNekoData getData(@NotNull UUID uuid){
+        checkIsClosed();
+        var data = dataMap.get(uuid);
+        if (data == null){
+            throw new IllegalArgumentException("data of " + uuid.toString() + "have not been load");
+        }
+        return data;
+    }
+
+    public boolean hasData(@NotNull UUID uuid){
+        checkIsClosed();
+        return dataMap.containsKey(uuid);
+    }
+
     public RPlayNekoData createData(UUID uuid){
         checkIsClosed();
-        if (dataMap.containsKey(uuid)){
+        if (hasData(uuid)){
             throw new IllegalStateException("data of " + uuid.toString() + "already loaded");
         }
         var data = new RPlayNekoData(uuid);
@@ -54,114 +66,53 @@ public class RPlayNekoDataSource {
         return data;
     }
 
-    public void removeAllData(){
+    public boolean removeData(@NotNull UUID uuid){
         checkIsClosed();
-        dataMap.clear();
+        return null != dataMap.remove(uuid);
     }
 
-    public boolean removeData(@NotNull UUID uuid, boolean inDisk){
+    public void removeData(@NotNull UUID uuid, boolean inDisk){
         checkIsClosed();
+        dataMap.remove(uuid);
         if (inDisk){
             dataTarget.deleteInDisk(uuid);
         }
-        boolean result = dataMap.containsKey(uuid);
-        if (result){
+    }
+
+    public boolean saveData(UUID uuid){
+        checkIsClosed();
+        var data = getData(uuid);
+        return dataTarget.saveToDisk(uuid, data);
+    }
+
+    public boolean loadData(UUID uuid){
+        checkIsClosed();
+        var data = createData(uuid);
+        boolean result = dataTarget.loadFromDisk(uuid, data);
+        if (!result){
+            data.markDelete();
             dataMap.remove(uuid);
         }
         return result;
     }
 
-    public @NotNull RPlayNekoData getData(@NotNull UUID uuid){
-        checkIsClosed();
-        if (!dataMap.containsKey(uuid)){
-            throw new IllegalStateException("data of " + uuid.toString() + "have not been load");
-        }
-        return dataMap.get(uuid);
-    }
-
-    public boolean saveData(UUID uuid){
-        checkIsClosed();
-        if (!hasData(uuid)){
-            return false;
-        }
-        var data = getData(uuid);
-        return dataTarget.saveToDisk(uuid, data);
-    }
-    public int saveDataIf(Predicate<RPlayNekoData> p){
-        checkIsClosed();
-        List<RPlayNekoData> listDataToSave = new LinkedList<>();
-
-        for (var data : data.valueSet()){
-            if (p.test(data)){
-                listDataToSave.add(data);
-            }
-        }
-
-        for (var data : listDataToSave){
-            dataTarget.saveToDisk(data.getUuid(), data);
-        }
-
-        return listDataToUnload.size();
-    }
-
-    public boolean removeData(@NotNull UUID uuid){
-        checkIsClosed();
-        return removeData(uuid, false);
-    }
-
-    public boolean hasData(UUID uuid){
-        checkIsClosed();
-        return dataMap.containsKey(uuid);
-    }
-
     public boolean unloadData(UUID uuid){
         checkIsClosed();
-        var data = dataMap.get(uuid);
-        if (data == null){
-            return false;
-        }
-        return unloadData0(uuid);
-    }
-    private boolean unloadData0(RPlayNekoData data){
+        boolean result;
+        var data = getData(uuid);
         if (data._delete()){
-            return dataTarget.deleteInDisk(data.getUuid());
+            result = dataTarget.deleteInDisk(uuid);
         } else {
-            return dataTarget.saveToDisk(data.getUuid(), data);
+            result = dataTarget.saveToDisk(uuid, data);
         }
-    }
-
-    public int unloadDataIf(Predicate<RPlayNekoData> p){
-        checkIsClosed();
-        List<RPlayNekoData> listDataToUnload = new LinkedList<>();
-
-        for (var data : data.valueSet()){
-            if (p.test(data)){
-                listDataToUnload.add(data);
-            }
-        }
-
-        for (var data : listDataToUnload){
-            unloadData0(data);
-        }
-
-        return listDataToUnload.size();
-    }
-
-    public boolean loadData(UUID uuid){
-        checkIsClosed();
-        if (dataMap.containsKey(uuid)){
-            return false;
-        }
-        var data = createData(uuid);
-        boolean result = dataTarget.loadFromDisk(uuid, data);
-        if (!result){
-            removeData(uuid);
+        if (result){
+            dataMap.remove(data);
         }
         return result;
     }
 
     /**
-     * 尝试从内存加载，若不存在则从dataTarget加载，仍然不存在时创建新的数据。
+     * 尝试从内存加载数据，若不存在则从dataTarget加载，仍然不存在时创建新的数据。
      */
     public RPlayNekoData fetchData(UUID uuid){
         checkIsClosed();
@@ -177,26 +128,28 @@ public class RPlayNekoDataSource {
     /**
      * 保存所有数据到dataTarget，并清空数据源
      */
-    public boolean unloadAllData(){
+    public void unloadAllData(){
         checkIsClosed();
-        for (RPlayNekoData data : dataMap.valueSet()){
-            unloadData0(data);
+        for (UUID uuid : dataMap.keySet()){
+            unloadData(uuid);
         }
-        return true;
     }
 
     /**
-     * 保存所有数据到dataTarget
+     * 保存所有脏数据到dataTarget
      */
-    public boolean saveAllData(){
+    public void saveDirtyData(){
         checkIsClosed();
-        for (Map.Entry<UUID, RPlayNekoData> entry : dataMap.entrySet()){
-            UUID uuid = entry.getKey();
-            RPlayNeKoData data = entry.getValue();
+        for (RPlayNekoData data : dataMap.values()){
             if (data._dirty()){
-                dataTarget.saveToDisk(uuid, data);
+                dataTarget.saveToDisk(data.getUuid(), data);
             }
         }
-        return true;
     }
+
+    public void removeAllData(){
+        checkIsClosed();
+        dataMap.clear();
+    }
+
 }
