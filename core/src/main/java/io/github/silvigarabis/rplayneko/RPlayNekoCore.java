@@ -28,6 +28,10 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMap = new WeakHashMap<>();
+    private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMapView = Collections.unmodifiableMap(nekoPlayerOriginMap);
+    public @UnmodifiableView Map<Player, RPlayNekoPlayer<Player>> getNekoPlayerOriginMapView(){
+        return nekoPlayerOriginMapView;
+    }
     public @NotNull RPlayNekoPlayer<Player> getNekoPlayer(@NotNull UUID uuid, @NotNull Player origin){
         synchronized(nekoPlayerOriginMap){
             var player = nekoPlayerOriginMap.get(origin);

@@ -16,6 +16,10 @@ dependencies {
 }
 
 processResources {
+    // :runServer :runClient 时需要提前复制资源 
+    mustRunAfter project(":core").tasks.getByName("processResources")
+    from(project(":core").tasks.getByName("processResources").outputs.files.singleFile)
+
     filesMatching("fabric.mod.json") {
         expand([
             "version": project.version,
