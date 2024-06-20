@@ -39,7 +39,7 @@ println "platform(s) that enabled: " + enabled_platforms
 
 allprojects {
     tasks.withType(JavaCompile) {
-        options.compilerArgs += ['-Xlint:deprecation']
+        options.compilerArgs += ['-Xlint:deprecation', '-Xlint:rawtypes', '-Xlint:deprecation', '-Xlint:unchecked']
     }
 }
 

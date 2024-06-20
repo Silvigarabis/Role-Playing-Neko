@@ -1,6 +1,7 @@
 package io.github.silvigarabis.rplayneko;
 
 import io.github.silvigarabis.rplayneko.data.*;
+import io.github.silvigarabis.rplayneko.feature.IFeature;
 import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
 import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerFactory;
 import java.util.logging.Logger;
@@ -12,9 +13,10 @@ import org.jetbrains.annotations.*;
  * 
  * # 创建实例
  * - 一个PlatformInstance应该先被创建
- * - 然后应该由PlatformInstance来初始化Platform，当然也可以直接让PlatformInstance实现Platform
- * - 接着，PlatformInstance读取配置文件，创建Core
- * - new Core()会调用Core#reloadConfig()来加载配置
+ * - 然后应该由PlatformInstance来初始化Platform，（可以让PlatformInstance实现Platform）
+ * - 接着，由PlatformInstance创建Core
+ * - 在一切准备就绪后（比如读取了配置文件），调用Core#init()
+ * - Core#init()会调用Core#reloadConfig()来加载配置
  * - PlatformInstance调用Core#reloadData()来加载数据
  * - 加载完成，可以开始使用
  * 
@@ -88,5 +90,9 @@ public interface Platform<Sender, Player> {
 
     boolean checkPermission(Sender sender, String permission);
 
+    boolean checkPermissionForPlayer(Player player, String permission);
+
     RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type);
+
+    @Nullable IFeature<Player> getFeature(String featureType);
 }

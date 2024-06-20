@@ -1,4 +1,4 @@
-main: io.github.silvigarabis.rplayneko.spigot.RPlayNekoSpigot
+main: io.github.silvigarabis.rplayneko.RPlayNekoSpigot
 api-version: '1.17'
 load: POSTWORLD
 folia-supported: false

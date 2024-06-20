@@ -3,7 +3,7 @@ package io.github.silvigarabis.rplayneko;
 import io.github.silvigarabis.rplayneko.event.*;
 import io.github.silvigarabis.rplayneko.data.*;
 import io.github.silvigarabis.rplayneko.util.*;
-import io.github.silvigarabis.rplayneko.feature.IFeature;
+import io.github.silvigarabis.rplayneko.feature.*;
 import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
 import io.github.silvigarabis.rplayneko.power.RPlayNekoPower;
 
@@ -25,6 +25,12 @@ public class RPlayNekoCore<Sender, Player> {
             throw new IllegalStateException("core not init");
         }
         return INSTANCE;
+    }
+
+    public RPlayNekoCore(Platform<Sender, Player> platform){
+        this.platform = platform;
+        this.messages = new Messages<>(this);
+        INSTANCE = this;
     }
 
     private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMap = new WeakHashMap<>();
@@ -68,35 +74,24 @@ public class RPlayNekoCore<Sender, Player> {
         this.dataSource = new RPlayNekoDataSource(this.platform.getDataTarget());
         return true;
     }
-    public void reloadData(){
-        if (this.dataSource != null){
-            this.dataSource = null;
-            this.dataSource.close();
-        }
-        this.initDataSource();
-    }
 
     private RPlayNekoConfig config;
     public RPlayNekoConfig getConfig(){
         return config;
     }
-    private void reloadConfig(){
-        this.config = platform.getCoreConfig();
-        var messageConfig = platform.getMessageConfig();
-        Messages.cleanMessageConfig();
-        Messages.loadMessageConfig(messageConfig);
-    }
-
-    public RPlayNekoCore(Platform<Sender, Player> platform){
-        this.platform = platform;
-        this.messages = new Messages<>(this);
-        this.reloadConfig();
-        INSTANCE = this;
-    }
 
     private Platform<Sender, Player> platform;
     public Platform<Sender, Player> getPlatform(){
         return platform;
+    }
+
+    public Logger getLogger(){
+        return platform.getLogger();
+    }
+
+    private Messages<Sender, Player> messages;
+    public Messages<Sender, Player> getMessages(){
+        return messages;
     }
 
     private Set<IFeature<Player>> enabledFeatures = new HashSet<>();
@@ -111,28 +106,102 @@ public class RPlayNekoCore<Sender, Player> {
         return enabledFeaturesView;
     }
 
-    public Logger getLogger(){
-        return platform.getLogger();
+    public void reloadConfig(){
+        this.config = platform.getCoreConfig();
+        var messageConfig = platform.getMessageConfig();
+        Messages.cleanMessageConfig();
+        Messages.loadMessageConfig(messageConfig);
     }
-    private Messages<Sender, Player> messages;
-    public Messages<Sender, Player> getMessages(){
-        return messages;
+
+    private void reloadData(){
+        if (this.dataSource != null){
+            this.dataSource.close();
+            this.dataSource = null;
+        }
+        this.initDataSource();
+        for (Player player : platform.getPlayers()){
+            UUID uuid = platform.getPlayerUuid(player);
+            getNekoPlayer(uuid, player); // to load playerdata
+        }
+    }
+
+    //currently unused
+    private String[] IdentifiedFeatures = new String[]{
+        "NekoChatMasterCallFeature", "NekoChatMuteFeature",
+        "NekoChatNyaFeature", "NekoNamePrefixFeature", "NekoPowerFeature",
+        "NekoRegexpSpeakReplaceFeature", "NekoSpeakReplaceFeature",
+        "RegexpSpeakReplaceFeature", "SpeakReplaceFeature"
+    };
+
+    public void reloadFeatures(){
+        enabledFeatures.clear();
+        for (String featureType : this.getConfig().getEnabledFeatures()){
+            switch (featureType){
+                case "NekoChatMasterCallFeature":
+                    enabledFeatures.add(new NekoChatMasterCallFeature<>());
+                    break;
+
+                case "NekoChatMuteFeature":
+                    enabledFeatures.add(new NekoChatMuteFeature<>());
+                    break;
+
+                case "NekoChatNyaFeature":
+                    enabledFeatures.add(new NekoChatNyaFeature<>());
+                    break;
+
+                case "NekoNamePrefixFeature":
+                    enabledFeatures.add(new NekoNamePrefixFeature<>());
+                    break;
+
+                case "NekoPowerFeature":
+                    enabledFeatures.add(new NekoPowerFeature<>());
+                    break;
+
+                case "NekoRegexpSpeakReplaceFeature":
+                    enabledFeatures.add(new NekoRegexpSpeakReplaceFeature<>());
+                    break;
+
+                case "NekoSpeakReplaceFeature":
+                    enabledFeatures.add(new NekoSpeakReplaceFeature<>());
+                    break;
+
+                case "RegexpSpeakReplaceFeature":
+                    enabledFeatures.add(new RegexpSpeakReplaceFeature<>());
+                    break;
+
+                case "SpeakReplaceFeature":
+                    enabledFeatures.add(new SpeakReplaceFeature<>());
+                    break;
+
+                default:
+                    IFeature<Player> platformedFeature = platform.getFeature(featureType);
+                    if (platformedFeature != null){
+                        enabledFeatures.add(platformedFeature);
+                    } else {
+                        getLogger().warning("unknown feature: " + featureType);
+                    }
+            }
+        }
     }
 
     public void reload(){
         forEachRun(this.enabledFeatures, "execute callback onCoreReload", f -> f.onCoreReload());
-        this.dataSource.close();
-        this.dataSource = null;
-        this.reloadConfig();
-        this.initDataSource();
+        dataSource.unloadAllData();
+        reloadConfig();
+        reloadFeatures();
+        reloadData();
     }
 
-    public void stop(){
+    private boolean isRunning = true;
+    public void shutdown(){
         forEachRun(this.enabledFeatures, "execute callback onCoreStop", f -> f.onCoreStop());
         enabledFeatures.clear();
-        this.dataSource.unloadAllData();
-        this.dataSource.close();
-        this.dataSource = null;
+        if (this.dataSource != null){
+            this.dataSource.unloadAllData();
+            this.dataSource.close();
+            this.dataSource = null;
+        }
+        isRunning = false;
     }
 
     public RPlayNekoPower<Player> newPowerInstance(RPlayNekoPowerType type, RPlayNekoPlayer<Player> player){
@@ -141,6 +210,10 @@ public class RPlayNekoCore<Sender, Player> {
 
     public boolean checkPermission(Sender sender, String permission){
         return this.platform.checkPermission(sender, "rplayneko." + permission);
+    }
+
+    public boolean checkPermissionForPlayer(Player player, String permission){
+        return this.platform.checkPermissionForPlayer(player, "rplayneko." + permission);
     }
 
     public void tick(){
@@ -152,6 +225,7 @@ public class RPlayNekoCore<Sender, Player> {
 
     public void emitEvent(Event<Player> event){
         forEachRun(this.enabledFeatures, "passing event " + event.getClass().getName(), f -> f.onEvent(event));
+
         if (event instanceof ChatEvent<Player> tEvent){
             forEachRun(this.enabledFeatures, "passing ChatEvent", f -> f.onChatEvent(tEvent));
         } else if (event instanceof NekoTransformEvent<Player> tEvent){
