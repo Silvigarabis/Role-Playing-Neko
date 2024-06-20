@@ -1,7 +1,6 @@
-package io.github.silvigarabis.rplayneko.spigot.data;
+package io.github.silvigarabis.rplayneko.data;
 
 import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
-import io.github.silvigarabis.rplayneko.data.*;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.*;
 import java.util.UUID;

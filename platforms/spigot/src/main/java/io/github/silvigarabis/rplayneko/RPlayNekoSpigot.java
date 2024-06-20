@@ -1,11 +1,9 @@
 package io.github.silvigarabis.rplayneko;
 
 import io.github.silvigarabis.rplayneko.data.IDataTarget;
+import io.github.silvigarabis.rplayneko.data.YamlDirectoryDataTarget;
 import io.github.silvigarabis.rplayneko.feature.IFeature;
-import io.github.silvigarabis.rplayneko.spigot.data.YamlDirectoryDataTarget;
-import io.github.silvigarabis.rplayneko.power.RPlayNekoPower;
-import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerFactory;
-import io.github.silvigarabis.rplayneko.power.RPlayNekoPowerType;
+import io.github.silvigarabis.rplayneko.power.*;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.CommandSender;
@@ -98,7 +96,7 @@ public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSende
 
     @Override
     public RPlayNekoConfig getCoreConfig(){
-        throw new RuntimeException("not implemented");
+        return coreConfig;
     }
 
     @Override
@@ -153,6 +151,12 @@ public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSende
 
     @Override
     public @Nullable RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type){
+        switch (type.getName()){
+            case "NIGHT_VISION":
+                return player -> new NightVisionPower(type, player);
+            case "JUMP_BOOST":
+                return player -> new JumpBoostPower(type, player);
+        }
         return null;
     }
 
