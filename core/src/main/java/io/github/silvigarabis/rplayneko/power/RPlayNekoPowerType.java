@@ -1,19 +1,9 @@
 package io.github.silvigarabis.rplayneko.power;
 
-public class RPlayNekoPowerType {
-    private final String name;
-    public String getName(){
-        return name;
-    }
-    public RPlayNekoPowerType(String name){
-        this.name = name;
-    }
-    @Override
-    public boolean equals(Object o){
-        return o instanceof RPlayNekoPowerType otype && otype.getName().equals(this.getName());
-    }
-    @Override
-    public int hashCode(){
-        return this.getName().hashCode() * 31;
+public enum RPlayNekoPowerType {
+    NIGHT_VISION, JUMP_BOOST;
+
+    public static RPlayNekoPowerType getByName(String name){
+        throw new RuntimeException("not implemented");
     }
 }

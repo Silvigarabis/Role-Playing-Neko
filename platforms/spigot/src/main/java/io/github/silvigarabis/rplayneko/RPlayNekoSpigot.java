@@ -151,10 +151,10 @@ public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSende
 
     @Override
     public @Nullable RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type){
-        switch (type.getName()){
-            case "NIGHT_VISION":
+        switch (type){
+            case NIGHT_VISION:
                 return player -> new NightVisionPower(type, player);
-            case "JUMP_BOOST":
+            case JUMP_BOOST:
                 return player -> new JumpBoostPower(type, player);
         }
         return null;

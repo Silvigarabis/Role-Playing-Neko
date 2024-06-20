@@ -7,13 +7,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class NightVisionPower extends RPlayNekoPower<Player> {
-    public NightVisionPower(RPlayNekoPowerType type, Player player){
+    public NightVisionPower(RPlayNekoPowerType type, RPlayNekoPlayer<Player> player){
         super(type, player);
     }
     private static final PotionEffect StatusEffect = new PotionEffect(PotionEffectType.NIGHT_VISION,
             21 * 20, 0, false, false, false);
     @Override
     public void tick(){
-        statusEffect.apply(this.player);
+        StatusEffect.apply(this.getPlayer().getOrigin());
     }
 }
