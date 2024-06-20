@@ -36,9 +36,13 @@ public class RPlayNekoCore<Sender, Player> {
     private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMap = new WeakHashMap<>();
     private final Map<Player, RPlayNekoPlayer<Player>> nekoPlayerOriginMapView = Collections.unmodifiableMap(nekoPlayerOriginMap);
     public @UnmodifiableView Map<Player, RPlayNekoPlayer<Player>> getNekoPlayerOriginMapView(){
+        checkIsRunning();
+
         return nekoPlayerOriginMapView;
     }
     public @NotNull RPlayNekoPlayer<Player> getNekoPlayer(@NotNull UUID uuid, @NotNull Player origin){
+        checkIsRunning();
+
         synchronized(nekoPlayerOriginMap){
             var player = nekoPlayerOriginMap.get(origin);
             if (player != null){
@@ -54,6 +58,8 @@ public class RPlayNekoCore<Sender, Player> {
         return player;
     }
     public @Nullable RPlayNekoPlayer<Player> getNekoPlayer(@NotNull UUID uuid){
+        checkIsRunning();
+
         Player player = platform.getPlayerByUuid(uuid);
         synchronized(nekoPlayerOriginMap){
             return nekoPlayerOriginMap.get(player);
@@ -62,12 +68,16 @@ public class RPlayNekoCore<Sender, Player> {
 
     private RPlayNekoDataSource dataSource;
     public RPlayNekoDataSource getDataSource(){
+        checkIsRunning();
+
         if (dataSource == null){
             throw new IllegalStateException("dataSource not initiated");
         }
         return dataSource;
     }
     public boolean initDataSource(){
+        checkIsRunning();
+
         if (dataSource == null){
             return false;
         }
@@ -77,36 +87,52 @@ public class RPlayNekoCore<Sender, Player> {
 
     private RPlayNekoConfig config;
     public RPlayNekoConfig getConfig(){
+        checkIsRunning();
+
         return config;
     }
 
     private Platform<Sender, Player> platform;
     public Platform<Sender, Player> getPlatform(){
+        checkIsRunning();
+
         return platform;
     }
 
     public Logger getLogger(){
+        checkIsRunning();
+
         return platform.getLogger();
     }
 
     private Messages<Sender, Player> messages;
     public Messages<Sender, Player> getMessages(){
+        checkIsRunning();
+
         return messages;
     }
 
     private Set<IFeature<Player>> enabledFeatures = new HashSet<>();
     private Set<IFeature<Player>> enabledFeaturesView = Collections.unmodifiableSet(enabledFeatures);
     public void addFeature(IFeature<Player> feature){
+        checkIsRunning();
+
         enabledFeatures.add(feature);
     }
     public void removeFeature(IFeature<Player> feature){
+        checkIsRunning();
+
         enabledFeatures.remove(feature);
     }
     public @UnmodifiableView Set<IFeature<Player>> getEnabledFeatures(){
+        checkIsRunning();
+
         return enabledFeaturesView;
     }
 
     public void reloadConfig(){
+        checkIsRunning();
+
         this.config = platform.getCoreConfig();
         var messageConfig = platform.getMessageConfig();
         Messages.cleanMessageConfig();
@@ -114,6 +140,8 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     private void reloadData(){
+        checkIsRunning();
+
         if (this.dataSource != null){
             this.dataSource.close();
             this.dataSource = null;
@@ -134,6 +162,8 @@ public class RPlayNekoCore<Sender, Player> {
     };
 
     public void reloadFeatures(){
+        checkIsRunning();
+
         enabledFeatures.clear();
         for (String featureType : this.getConfig().getEnabledFeatures()){
             switch (featureType){
@@ -185,6 +215,8 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     public void reload(){
+        checkIsRunning();
+
         forEachRun(this.enabledFeatures, "execute callback onCoreReload", f -> f.onCoreReload());
         dataSource.unloadAllData();
         reloadConfig();
@@ -193,7 +225,13 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     private boolean isRunning = true;
+    private void checkIsRunning(){
+        if (!isRunning){
+            throw new IllegalStateException("core not running");
+        }
+    }
     public void shutdown(){
+        if (!isRunning) return;
         forEachRun(this.enabledFeatures, "execute callback onCoreStop", f -> f.onCoreStop());
         enabledFeatures.clear();
         if (this.dataSource != null){
@@ -205,18 +243,30 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     public RPlayNekoPower<Player> newPowerInstance(RPlayNekoPowerType type, RPlayNekoPlayer<Player> player){
-        return platform.getPowerFactory(type).newPowerInstance(player);
+        checkIsRunning();
+
+        var factory = platform.getPowerFactory(type);
+        if (factory == null){
+            throw new IllegalArgumentException("the specified power not implemented");
+        }
+        return factory.newPowerInstance(player);
     }
 
     public boolean checkPermission(Sender sender, String permission){
+        checkIsRunning();
+
         return this.platform.checkPermission(sender, "rplayneko." + permission);
     }
 
     public boolean checkPermissionForPlayer(Player player, String permission){
+        checkIsRunning();
+
         return this.platform.checkPermissionForPlayer(player, "rplayneko." + permission);
     }
 
     public void tick(){
+        checkIsRunning();
+
         for (Player origin : platform.getPlayers()){
             var player = getNekoPlayer(platform.getPlayerUuid(origin), origin);
             player.tick();
@@ -224,6 +274,8 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     public void emitEvent(Event<Player> event){
+        checkIsRunning();
+
         forEachRun(this.enabledFeatures, "passing event " + event.getClass().getName(), f -> f.onEvent(event));
 
         if (event instanceof ChatEvent<Player> tEvent){
@@ -234,6 +286,8 @@ public class RPlayNekoCore<Sender, Player> {
     }
 
     public <T> void forEachRun(Iterable<T> it, String message, Consumer<T> a){
+        checkIsRunning();
+
         for (T value : it){
             try {
                 a.accept(value);

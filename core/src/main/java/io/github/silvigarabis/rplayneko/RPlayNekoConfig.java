@@ -22,7 +22,7 @@ public class RPlayNekoConfig {
         return language;
     }
     private Set<String> enabledPowers = new HashSet<>();
-    public void setEnabledPowers(Set<String> typeSet){
+    public void setEnabledPowers(Collection<String> typeSet){
         enabledPowers.clear();
         enabledPowers.addAll(typeSet);
     }
@@ -31,7 +31,7 @@ public class RPlayNekoConfig {
     }
 
     private Set<String> enabledFeatures = new HashSet<>();
-    public void setEnabledFeatures(Set<String> featureSet){
+    public void setEnabledFeatures(Collection<String> featureSet){
         enabledFeatures.clear();
         enabledFeatures.addAll(featureSet);
     }

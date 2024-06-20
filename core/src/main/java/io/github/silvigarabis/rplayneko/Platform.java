@@ -92,7 +92,7 @@ public interface Platform<Sender, Player> {
 
     boolean checkPermissionForPlayer(Player player, String permission);
 
-    RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type);
+    @Nullable RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type);
 
     @Nullable IFeature<Player> getFeature(String featureType);
 }

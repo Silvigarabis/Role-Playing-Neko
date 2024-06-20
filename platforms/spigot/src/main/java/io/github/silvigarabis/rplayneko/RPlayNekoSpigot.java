@@ -11,9 +11,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import org.bukkit.configuration.file.YamlConfiguration;
+import java.io.*;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import org.jetbrains.annotations.*;
+
 import java.util.*;
 import java.util.logging.Logger;
-import java.io.File;
 
 public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSender, Player> {
     private RPlayNekoCore<CommandSender, Player> core;
@@ -26,8 +31,20 @@ public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSende
 
     @Override
     public void onEnable(){
+        reloadConfig();
         core.reload();
         getServer().getScheduler().runTaskTimer(this, core::tick, 20, 20);
+    }
+
+    private RPlayNekoConfig coreConfig = new RPlayNekoConfig();
+
+    @Override
+    public void reloadConfig(){
+        saveDefaultConfig();
+        super.reloadConfig();
+        coreConfig.setLanguage(getConfig().getString("language", "zh_cn"));
+        coreConfig.setEnabledFeatures(getConfig().getStringList("enabled-features"));
+        coreConfig.setEnabledPowers(getConfig().getStringList("enabled-powers"));
     }
 
     private IDataTarget dataTarget;
@@ -43,7 +60,40 @@ public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSende
 
     @Override
     public Map<String, String> getMessageConfig(){
-        throw new RuntimeException("not implemented");
+        Path messageFilePath = Paths.get("assets/rplayneko/lang", coreConfig.getLanguage() + ".yml");
+        // I like this
+        Path defaultMessageFilePath = Paths.get("assets/rplayneko/lang/zh_cn.yml");
+
+        saveResource(messageFilePath.toString(), false);
+        saveResource(defaultMessageFilePath.toString(), false);
+
+        File messageFile = new File(getDataFolder().getPath(), messageFilePath.toString());
+        File defaultMessageFile = new File(getDataFolder().getPath(), defaultMessageFilePath.toString());
+
+        YamlConfiguration messageConfig = null;
+        YamlConfiguration defaultMessageConfig = null;
+
+        if (messageFile.exists()){
+            messageConfig = YamlConfiguration.loadConfiguration(messageFile);
+        }
+        if (defaultMessageFile.exists() && !defaultMessageFile.equals(messageFile)){
+            defaultMessageConfig = YamlConfiguration.loadConfiguration(defaultMessageFile);
+        }
+
+        Map<String, String> messages = new HashMap<>();
+
+        for (String key : Messages.MessageKey.Keys.values()){
+            String message = messageConfig.getString(key, null);
+            if (message == null && defaultMessageConfig != null){
+                message = defaultMessageConfig.getString(key, null);
+            }
+            
+            if (message != null){
+                messages.put(key, message);
+            }
+        }
+
+        return messages;
     }
 
     @Override
@@ -102,12 +152,12 @@ public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSende
     }
 
     @Override
-    public RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type){
-        throw new IllegalArgumentException("the specified power not implemented");
+    public @Nullable RPlayNekoPowerFactory<Player> getPowerFactory(RPlayNekoPowerType type){
+        return null;
     }
 
     @Override
-    public IFeature<Player> getFeature(String featureType){
-        throw new RuntimeException("not implemented");
+    public @Nullable IFeature<Player> getFeature(String featureType){
+        return null;
     }
 }
