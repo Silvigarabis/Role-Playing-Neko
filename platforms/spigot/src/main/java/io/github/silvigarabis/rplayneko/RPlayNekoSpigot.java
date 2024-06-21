@@ -34,6 +34,11 @@ public class RPlayNekoSpigot extends JavaPlugin implements Platform<CommandSende
         reloadConfig();
         core.reload();
         getServer().getScheduler().runTaskTimer(this, core::tick, 20, 20);
+        if (getConfig().getBoolean("data.async-save", false)){
+            getServer().getScheduler().runTaskTimerAsynchronously(this, () -> core.getDataSource().saveDirtyData(), 45 * 20, 45 * 20);
+        } else {
+            getServer().getScheduler().runTaskTimer(this, () -> core.getDataSource().saveDirtyData(), 45 * 20, 45 * 20);
+        }
     }
 
     private RPlayNekoConfig coreConfig = new RPlayNekoConfig();
