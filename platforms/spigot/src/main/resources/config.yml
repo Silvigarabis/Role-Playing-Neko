@@ -1,8 +1,8 @@
-# 基于权限给予玩家使用权限，忽略此配置中的设置
-# "enabled", "disabled"
-permission-check-override: enabled
+config-version: 1
+
 # 语言
-# 所有位于lang/目录下的json文件的名字都可以写在这里
+# 所有位于lang/目录下的yml文件的名字都可以写在这里
+# 如果指定的语言存在于内置资源当中，将会自动解压
 # 目前支持：zh_cn
 language: zh_cn
 
@@ -10,77 +10,118 @@ language: zh_cn
 # null, 或者language支持的选项
 player-language: null
 
+# 基于权限给予玩家使用权限，忽略此配置中的设置
+# "enabled", "disabled"
+permission-check-override: enabled
+
+# 禁用一些功能
+disabled-features:
+- NekoNSFWFeature
+
+# 功能: NekoChatMuteFeature
+# 功能: NekoPowerFeature
+neko:
+   allow-mute: false
+   allow-power: true
+
+# 功能: NekoChatNamePrefixFeature
+# 功能: NekoChatNyaFeature
+# 功能: NekoChatMasterCallFeature
+chat:
+   add-neko-name-prefix: true
+   add-neko-nya: true
+   alias-master-call:
+      enable: false
+      changeby-owner: true
+      changeby-neko: false
+
+# 功能: SpeakReplaceFeature
+# 功能: NekoSpeakReplaceFeature
+# 功能: RegexpSpeakReplaceFeature
+# 功能: NekoRegexpSpeakReplaceFeature
+# 动作:
+speak-replace:
+   enable-for-neko: true
+   enable-for-all: false
+   enable-regex: false
+   changeby-owner: true
+   changeby-neko: true
+
 toneko:
     # 玩家可以把自己变成猫娘吗？
+    # 权限: rplayneko.nekotransform.to.self
     can-self-transform: true
 
     # 玩家可以把别人变成猫娘吗？
+    # 权限: rplayneko.nekotransform.to.other
     can-transform: true
 
     # 玩家把自己或别人变猫娘之前要确认吗？
     transform-confirm: true
     
+    # 玩家把自己或别人后自动变成受害者的主人吗？
+    # 权限: rplayneko.nekotransform.to.autoowner
+    transform-autoowner: true
+
     # 玩家把别人变猫娘之前要让受害者确认吗？
+    # 权限: rplayneko.nekotransform.to.force
     transform-require-ask: true
 
-neko:
     # 自己选择变成猫娘后还可以选择变回来吗？
+    # 权限: rplayneko.nekotransform.back.self
     self-transform-back-self: true
 
     # 没有主人的猫娘会自动变回来吗？
+    # 权限: rplayneko.nekotransform.back.noowner
     auto-transform-back-noowner: false
 
     # 猫娘可以自己变回来吗？
-    transform-back-self: true
+    # 权限: rplayneko.nekotransform.back.nekoself
+    transform-back-self: false
+
     # 猫娘可以被主人变回来吗？
+    # 权限: rplayneko.nekotransform.back.nekoowner
     transform-back-owner: true
+
     # 猫娘可以被其他人变回来吗？
+    # 权限: rplayneko.nekotransform.back.other
     transform-back-other: false
+
     # 把猫娘变回来之前要让受害者确认吗？
+    # 权限: rplayneko.nekotransform.back.force
     transform-back-require-ask: false
 
-    # 猫娘可以认主人吗？
-    owner-add: true
-    # 猫娘可以不认主人吗？
-    owner-remove: true
-
-    feature-text_replace:
-        allow-change: false
-    feature-chat_nya:
-        allow-change: true
-    feature-chat_owner_call:
-        allow-change: true
-
 nekoowner:
-    multi-owner: false
-    other-owner-add: false
-    other-owner-remove: false
+   # 允许设置多个主人？
+   # 权限: rplayneko.nekoowner.multiowner
+   # 权限: rplayneko.neko.multiowner
+   multi-owner: false
+   # 允许猫娘作为主人？
+   # 权限: rplayneko.nekoowner.allownekoowner
+   # 权限: rplayneko.neko.allownekoowner
+   neko-owner: false
+   # 允许猫娘自己作为主人？
+   # 权限: rplayneko.nekoowner.selfowner
+   self-owner: true
+   # 权限: rplayneko.nekoowner.addbyowner
+   addby-owner: true
+   # 权限: rplayneko.nekoowner.removebyowner
+   removeby-owner: true
+   # 权限: rplayneko.nekoowner.removebyownerself
+   removeby-ownerself: false
+   # 权限: rplayneko.nekoowner.addbyneko
+   addby-neko: true
+   # 权限: rplayneko.nekoowner.removebyneko
+   removeby-neko: true
 
-    feature-text_replace:
-        allow-change: true
-    feature-chat_nya:
-        allow-change: false
-    feature-chat_owner_call:
-        allow-change: true
-    feature-neko_chat_mute:
-        allow-change: true
-
+# 使用这个配置，你可以直接启用一些功能
+# 不推荐使用，仅用于调试
+# 被 disabled-features 设置覆盖
 enabled-features:
-- text_replace
-- chat_owner_call
-- model_replace
-- neko_chat_mute
-- chat_nya
+#- RegexpSpeakReplaceFeature
 
-allowed-features:
-- text_replace
-- chat_owner_call
-- model_replace
-- neko_chat_mute
-- chat_nya
-
-feature-text_replace:
-feature-chat_nya:
-feature-chat_owner_call:
-feature-model_replace:
-feature-neko_chat_mute:
+data:
+    # 使用异步操作保存玩家数据
+    # 默认不启用，因为这个不是必要的
+    # 如果你的服务器出现了玩家退出服务器时会卡很久的情况，尝试使用这个
+    async-save: false

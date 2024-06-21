@@ -39,6 +39,9 @@ public abstract class Event<Player> {
             result = EventResult.MODIFIED;
         }
     }
+    public boolean isModified(){
+        return result == EventResult.MODIFIED;
+    }
 
     public boolean iModifiable(){
         return false;
