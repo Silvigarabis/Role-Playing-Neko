@@ -22,5 +22,74 @@ public class StringUtil {
         }
         return text;
     }
-}
 
+    public static String format(String text, List<String> replacements){
+        StringBuffer result = new StringBuffer();
+
+        Pattern pattern = Pattern.compile("%(?:(\\d)\\$)?s");
+        Matcher matcher = pattern.matcher(text);
+
+        int location = 1;
+        while (matcher.find()){
+            String match = matcher.group(0);
+            String p1 = matcher.group(1);
+            String replacement;
+            int index;
+            if (p1 != null){
+                index = Integer.parseInt(p1) - 1;
+            } else {
+                index = location - 1;
+                location++;
+            }
+            if (index < replacements.size()){
+                replacement = replacements.get(index);
+            } else {
+                replacement = match;
+            }
+            if (replacement == null){
+                replacement = "";
+            } else {
+                replacement = Matcher.quoteReplacement(replacement);
+            }
+            matcher.appendReplacement(result, replacement);
+        }
+        matcher.appendTail(result);
+
+        return result.toString();
+    }
+
+    public static String format(String text, String... replacements){
+        StringBuffer result = new StringBuffer();
+
+        Pattern pattern = Pattern.compile("%(?:(\\d)\\$)?s");
+        Matcher matcher = pattern.matcher(text);
+
+        int location = 1;
+        while (matcher.find()){
+            String match = matcher.group(0);
+            String p1 = matcher.group(1);
+            String replacement;
+            int index;
+            if (p1 != null){
+                index = Integer.parseInt(p1) - 1;
+            } else {
+                index = location - 1;
+                location++;
+            }
+            if (index < replacements.length){
+                replacement = replacements[index];
+            } else {
+                replacement = match;
+            }
+            if (replacement == null){
+                replacement = "";
+            } else {
+                replacement = Matcher.quoteReplacement(replacement);
+            }
+            matcher.appendReplacement(result, replacement);
+        }
+        matcher.appendTail(result);
+
+        return result.toString();
+    }
+}

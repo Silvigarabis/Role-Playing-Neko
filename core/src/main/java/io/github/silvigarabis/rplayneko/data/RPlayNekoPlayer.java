@@ -114,10 +114,10 @@ public class RPlayNekoPlayer<T> {
     public void sendMessage(String message){
         this.getCore().getMessages().sendPlayer(this.origin, message);
     }
-    public void sendMessage(Messages.MessageKey messageKey, List<String> replacements){
+    public void sendMessage(Messages.MessageKey messageKey, List<?> replacements){
         this.getCore().getMessages().sendPlayer(this.origin, messageKey, replacements);
     }
-    public void sendMessage(Messages.MessageKey messageKey, String... replacements){
+    public void sendMessage(Messages.MessageKey messageKey, Object... replacements){
         this.getCore().getMessages().sendPlayer(this.origin, messageKey, replacements);
     }
     public void sendMessage(Messages.MessageKey messageKey){
