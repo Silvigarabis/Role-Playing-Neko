@@ -112,76 +112,14 @@ public class Messages<Sender, Player> {
         return getMessageText(messageKey, true);
     }
 
-    public static String getMessageText(MessageKey messageKey, String[] replacements){
+    public static String getMessageText(MessageKey messageKey, Object... replacements){
         String text = getMessageText(messageKey);
-        StringBuffer result = new StringBuffer();
-
-        Pattern pattern = Pattern.compile("%(?:(\\d)\\$)?s");
-        Matcher matcher = pattern.matcher(text);
-
-        int location = 1;
-        while (matcher.find()){
-            String match = matcher.group(0);
-            String p1 = matcher.group(1);
-            String replacement;
-            int index;
-            if (p1 != null){
-                index = Integer.parseInt(p1) - 1;
-            } else {
-                index = location - 1;
-                location++;
-            }
-            if (index < replacements.length){
-                replacement = replacements[index];
-            } else {
-                replacement = match;
-            }
-            if (replacement == null){
-                replacement = "";
-            } else {
-                replacement = Matcher.quoteReplacement(replacement);
-            }
-            matcher.appendReplacement(result, replacement);
-        }
-        matcher.appendTail(result);
-
-        return result.toString();
+        return String.format(text, replacements);
     }
 
-    public static String getMessageText(MessageKey messageKey, List<String> replacements){
+    public static String getMessageText(MessageKey messageKey, List<?> replacements){
         String text = getMessageText(messageKey);
-        StringBuffer result = new StringBuffer();
-
-        Pattern pattern = Pattern.compile("%(?:(\\d)\\$)?s");
-        Matcher matcher = pattern.matcher(text);
-
-        int location = 1;
-        while (matcher.find()){
-            String match = matcher.group(0);
-            String p1 = matcher.group(1);
-            String replacement;
-            int index;
-            if (p1 != null){
-                index = Integer.parseInt(p1) - 1;
-            } else {
-                index = location - 1;
-                location++;
-            }
-            if (index < replacements.size()){
-                replacement = replacements.get(index);
-            } else {
-                replacement = match;
-            }
-            if (replacement == null){
-                replacement = "";
-            } else {
-                replacement = Matcher.quoteReplacement(replacement);
-            }
-            matcher.appendReplacement(result, replacement);
-        }
-        matcher.appendTail(result);
-
-        return result.toString();
+        return String.format(text, replacements.toArray());
     }
 
     public Messages(RPlayNekoCore<Sender, Player> core){
@@ -189,35 +127,35 @@ public class Messages<Sender, Player> {
     }
     private final RPlayNekoCore<Sender, Player> core;
 
-    public String getMessage(Player player, MessageKey messageKey, String... replacements){
+    public String getMessage(Player player, MessageKey messageKey, Object... replacements){
         return getMessageText(messageKey, replacements);
     }
     public String getMessage(Player player, MessageKey messageKey){
         return getMessageText(messageKey);
     }
-    public String getMessage(Player player, MessageKey messageKey, List<String> replacements){
+    public String getMessage(Player player, MessageKey messageKey, List<?> replacements){
         return getMessageText(messageKey, replacements);
     }
 
-    public String getMessage(MessageKey messageKey, String... replacements){
+    public String getMessage(MessageKey messageKey, Object... replacements){
         return getMessageText(messageKey, replacements);
     }
     public String getMessage(MessageKey messageKey){
         return getMessageText(messageKey);
     }
-    public String getMessage(MessageKey messageKey, List<String> replacements){
+    public String getMessage(MessageKey messageKey, List<?> replacements){
         return getMessageText(messageKey, replacements);
     }
 
     //TODO: 多语言支持
     private String defaultLocale = null;
-    private String getMessage(String locale, MessageKey messageKey, String[] replacements){
+    private String getMessage(String locale, MessageKey messageKey, Object... replacements){
         return getMessageText(messageKey, replacements);
     }
     private String getMessage(String locale, MessageKey messageKey){
         return getMessageText(messageKey);
     }
-    private String getMessage(String locale, MessageKey messageKey, List<String> replacements){
+    private String getMessage(String locale, MessageKey messageKey, List<?> replacements){
         return getMessageText(messageKey, replacements);
     }
 
@@ -232,10 +170,10 @@ public class Messages<Sender, Player> {
             this.core.getPlatform().sendMessage(sender, line);
         }
     }
-    public void send(Sender sender, MessageKey messageKey, List<String> replacements){
+    public void send(Sender sender, MessageKey messageKey, List<?> replacements){
         send(sender, getMessage(messageKey, replacements));
     }
-    public void send(Sender sender, MessageKey messageKey, String[] replacements){
+    public void send(Sender sender, MessageKey messageKey, Object... replacements){
         send(sender, getMessage(messageKey, replacements));
     }
     public void send(Sender sender, MessageKey messageKey){
@@ -253,17 +191,17 @@ public class Messages<Sender, Player> {
             this.core.getPlatform().sendMessageToPlayer(player, line);
         }
     }
-    public void sendPlayer(Player player, MessageKey messageKey, List<String> replacements){
+    public void sendPlayer(Player player, MessageKey messageKey, List<?> replacements){
         sendPlayer(player, getMessage(player, messageKey, replacements));
     }
-    public void sendPlayer(Player player, MessageKey messageKey, String[] replacements){
+    public void sendPlayer(Player player, MessageKey messageKey, Object... replacements){
         sendPlayer(player, getMessage(player, messageKey, replacements));
     }
     public void sendPlayer(Player player, MessageKey messageKey){
         sendPlayer(player, getMessage(player, messageKey));
     }
 
-    public void consoleLog(Level level, MessageKey messageKey, String[] replacements){
+    public void consoleLog(Level level, MessageKey messageKey, Object... replacements){
         consoleLog(level, getMessage(messageKey, replacements));
     }
     public void consoleLog(Level level, String message){
@@ -275,13 +213,13 @@ public class Messages<Sender, Player> {
         logger.log(level, message);
     }
 
-    public void consoleInfo(MessageKey messageKey, String... replacements){
+    public void consoleInfo(MessageKey messageKey, Object... replacements){
         consoleLog(Level.INFO, messageKey, replacements);
     }
-    public void consoleWarn(MessageKey messageKey, String... replacements){
+    public void consoleWarn(MessageKey messageKey, Object... replacements){
         consoleLog(Level.WARNING, messageKey, replacements);
     }
-    public void consoleError(MessageKey messageKey, String... replacements){
+    public void consoleError(MessageKey messageKey, Object... replacements){
         consoleLog(Level.SEVERE, messageKey, replacements);
     }
 }
