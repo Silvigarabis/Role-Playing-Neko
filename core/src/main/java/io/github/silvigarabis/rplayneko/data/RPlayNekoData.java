@@ -251,4 +251,49 @@ public class RPlayNekoData {
         return result;
     }
 
+    public static Map<?, ?> toMap(RPlayNekoData data){
+        Map<?, ?> dataRecord = new LinkedHashMap<>();
+        dataRecord.put("castor", data.castor.toString());
+        dataRecord.put("isNeko", data.isNeko);
+        dataRecord.put("isMuted", data.isMuted);
+        dataRecord.put("nyaText", data.nyaText);
+        dataRecord.put("experiences", data.experiences);
+        dataRecord.put("speakReplaces", data.speakReplaces);
+        dataRecord.put("regexpSpeakReplaces", data.regexpSpeakReplaces);
+        dataRecord.put("masterCalls", new LinkedList<String>(data.masterCalls));
+        dataRecord.put("enabledPowers", data.enabledPowers.stream().map(p -> p.getName()).toList());
+        dataRecord.put("owners", data.owners.stream().map(uuid -> uuid.toString()).toList());
+        return dataRecord;
+    }
+
+    public static RPlayNekoData fromMap(UUID uuid, Map<?, ?> dataRecord){
+        RPlayNekoData data = new RPlayNekoData(uuid);
+        data.castor = Optional.ofNullable((String)dataRecord.get("castor")).map(UUID::fromString).orElse(null);
+        data.isNeko = (Boolean)dataRecord.get("isNeko");
+        data.isMuted = (Boolean)dataRecord.get("isMuted");
+        data.nyaText = (String)dataRecord.get("nyaText");
+        Optional.ofNullable(Map<dataRecord.get("experiences"))
+        data.experiences.putAll((Map<String, Integer>)())
+        throw new RuntimeException("not implemented");
+    }
+}
+
+    private @Nullable UUID castor = null;
+
+    private boolean isNeko = false;
+    private boolean isMuted = false;
+    private @Nullable String nyaText = null;
+
+    private final Map<UUID, Integer> experiences = new ConcurrentHashMap<>();
+    private final Map<String, String> speakReplaces = new ConcurrentHashMap<>();
+    private final Map<String, String> regexpSpeakReplaces = new ConcurrentHashMap<>();
+    private final Set<String> masterCalls = ConcurrentHashMap.newKeySet();
+    private final Set<RPlayNekoPowerType> enabledPowers = ConcurrentHashMap.newKeySet();
+    private final List<UUID> owners = new ArrayList<>();
+
+let value = map.get(key)
+if (value != null){
+    return asValue(value);
+} else {
+    return value;
 }

@@ -125,3 +125,6 @@ data:
     # 默认不启用，因为这个不是必要的
     # 如果你的服务器出现了玩家退出服务器时会卡很久的情况，尝试使用这个
     async-save: false
+    # 存储玩家名而不是UUID
+    # 暂未实现
+    store-player-name-as-uuid: false
